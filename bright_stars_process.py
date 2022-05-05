@@ -208,7 +208,10 @@ if __name__ == "__main__":
     bsdir = args.output
     if not os.path.exists(bsdir):
         os.system('mkdir '+bsdir)
-    outdir = bsdir+'analyse_outputs/'
+    objdir = bsdir+'/'+name+'/'
+    if not os.path.exists(objdir):
+        os.system('mkdir '+objdir)
+    outdir = objdir+'analyse_outputs/'
     root_dir = '/ngts/scratch/PAOPhot2/'
     if not os.path.exists(outdir):
         os.system('mkdir '+outdir)
@@ -216,8 +219,8 @@ if __name__ == "__main__":
         os.system('mkdir '+outdir+'ind_tel_lcs/')
         os.system('mkdir '+outdir+'data_files/')
         os.system('mkdir '+outdir+'logs/')
-    if not os.path.exists(bsdir+'action_summaries/'):
-        os.system('mkdir '+bsdir+'action_summaries/')
+    if not os.path.exists(objdir+'action_summaries/'):
+        os.system('mkdir '+objdir+'action_summaries/')
     nights = args.night
     if nights is None:
         raise ValueError('I need night(s) for the observations. (--night <YYYY-MM-DD>)')
@@ -394,7 +397,7 @@ if __name__ == "__main__":
         print(' ')
         print(' ')
         logger.info('Night '+ns+f': Running for Action{ac}...')
-        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+bsdir+'action_summaries/')
+        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
         phot_file_root = root_dir+f'photometry/action{ac}/ACITON_{ac}_'
         try:
             bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')

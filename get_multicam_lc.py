@@ -45,7 +45,7 @@ if __name__ == "__main__":
     args = ParseArgs()
     name = args.name
  #   root_dir = '/ngts/scratch/brightstars/PAOPhot2/'+name+'/'
-    root_dir = args.output
+    root_dir = args.output+'/'+name+'/'
     filedir = root_dir+'analyse_outputs/data_files/'+args.night+'/'
     opdir = root_dir+'analyse_outputs/data_files/'
     bjd, flux, err = np.array([]), np.array([]), np.array([])
