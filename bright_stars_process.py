@@ -35,6 +35,8 @@ def ParseArgs():
  #   parser.add_argument('--tic', type=int)
  #   parser.add_argument('--campaign', type=str, default=None)
  #   parser.add_argument('--actions', type=int, nargs='*', default=None)
+    parser.add_argument('--output', type=str, default='./bsproc_outputs/',
+                        help='Name of directory to save the test outputs in. Default is ./bsproc_outputs/')
     parser.add_argument('--aper', type=float, nargs='*', default=None,
                         help='Apertures to get light curves using. Full or half integers (eg. 2.0 3.0 4.5 6.0). OPTIONAL')
     parser.add_argument('--bad_comp_tics', type=int, nargs='*', default=None,
@@ -57,8 +59,6 @@ def ParseArgs():
                         help='Comparison stars fainter than the target, with a Tmag difference greater than this are excluded. OPTIONAL. Default is 3.5mag')
     parser.add_argument('--dmag', type=float, default=0.5,
                         help='Node spacing for comparison star rejection spline. OPTIONAL. Default is 0.5mag.')
-    parser.add_argument('--testing', type=str, default='testing',
-                        help='Use this flag if testing the code. Pass as the argument the name of a new directory to save the test outputs in. Default is testing/')
     return parser.parse_args()
 
 def custom_logger(logger_name, level=logging.DEBUG):
@@ -201,12 +201,11 @@ if __name__ == "__main__":
     name = args.name
     if name is None:
         raise ValueError('I need an object name. (--name <object_name>) ')
-    if args.testing is not None:
-        bsdir = '/ngts/scratch/brightstars/PAOPhot2/'+args.testing+'/'+name+'/'
-        if not os.path.exists('/ngts/scratch/brightstars/PAOPhot2/'+args.testing):
-            os.system('mkdir /ngts/scratch/brightstars/PAOPhot2/'+args.testing)
-    else:
-        bsdir = '/ngts/scratch/brightstars/PAOPhot2/'+name+'/'
+  #  if args.testing is not None:
+  #      bsdir = '/ngts/scratch/brightstars/PAOPhot2/'+args.testing+'/'+name+'/'
+  #      if not os.path.exists('/ngts/scratch/brightstars/PAOPhot2/'+args.testing):
+  #          os.system('mkdir /ngts/scratch/brightstars/PAOPhot2/'+args.testing)
+    bsdir = args.output
     if not os.path.exists(bsdir):
         os.system('mkdir '+bsdir)
     outdir = bsdir+'analyse_outputs/'

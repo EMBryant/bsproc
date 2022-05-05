@@ -18,6 +18,7 @@ def ParseArgs():
     parser.add_argument('--night', type=str)
     parser.add_argument('--actions', type=int, nargs='*')
     parser.add_argument('--aper', type=float, default=None)
+    parser.add_argument('--output', type=str, default='./bsproc_outputs/')
     return parser.parse_args()
 
 def lb(time, flux, err, bin_width):
@@ -43,7 +44,8 @@ def lb(time, flux, err, bin_width):
 if __name__ == "__main__":
     args = ParseArgs()
     name = args.name
-    root_dir = '/ngts/scratch/brightstars/PAOPhot2/'+name+'/'
+ #   root_dir = '/ngts/scratch/brightstars/PAOPhot2/'+name+'/'
+    root_dir = args.output
     filedir = root_dir+'analyse_outputs/data_files/'+args.night+'/'
     opdir = root_dir+'analyse_outputs/data_files/'
     bjd, flux, err = np.array([]), np.array([]), np.array([])
