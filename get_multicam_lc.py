@@ -55,8 +55,10 @@ if __name__ == "__main__":
     skybg = np.array([])
     if len(args.apers) == 1:
         apers = [args.apers[0] for ac in args.actions]
+        file_name = opdir+name+f'_NGTS_'+args.night+f'_A{args.apers[0]}_bsproc_lc.dat'
     else:
         apers = args.apers
+        file_name = opdir+name+f'_NGTS_'+args.night+f'_multiap_bsproc_lc.dat'
     for ac, rap in zip(args.actions, apers):
         df = pd.read_csv(filedir+f'action{ac}_bsproc_dat.csv',
                          index_col='NExposure')
