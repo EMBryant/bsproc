@@ -105,6 +105,6 @@ if __name__ == "__main__":
              f'\n Aperture Radii: {apers} pixels' + \
               '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg'
     
-    np.savetxt(opdir+name+f'_NGTS_'+args.night+f'_A{rap}_bsproc_lc.dat',
+    np.savetxt(file_name,
                op, header=header,
                fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
