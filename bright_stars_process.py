@@ -211,14 +211,11 @@ if __name__ == "__main__":
     objdir = bsdir+'/'+name+'/'
     if not os.path.exists(objdir):
         os.system('mkdir '+objdir)
-    outdir = objdir+'analyse_outputs/'
+    outdir_main = objdir+'analyse_outputs/'
     root_dir = '/ngts/scratch/PAOPhot2/'
-    if not os.path.exists(outdir):
-        os.system('mkdir '+outdir)
-        os.system('mkdir '+outdir+'comp_star_check_plots/')
-        os.system('mkdir '+outdir+'ind_tel_lcs/')
-        os.system('mkdir '+outdir+'data_files/')
-        os.system('mkdir '+outdir+'logs/')
+    if not os.path.exists(outdir_main):
+        os.system('mkdir '+outdir_main)
+        os.system('mkdir '+outdir_main+'master_logs/')
     if not os.path.exists(objdir+'action_summaries/'):
         os.system('mkdir '+objdir+'action_summaries/')
     nights = args.night
@@ -237,16 +234,15 @@ if __name__ == "__main__":
             raise ValueError('Night in wrong format. Must be YYYY-MM-DD')
         if int(m) > 12.5:
             raise ValueError('Night in wrong format. Must be YYYY-MM-DD')
-        if not os.path.exists(outdir+'comp_star_check_plots/'+night):
-            os.system('mkdir '+outdir+'comp_star_check_plots/'+night)
-        if not os.path.exists(outdir+'ind_tel_lcs/'+night):
-            os.system('mkdir '+outdir+'ind_tel_lcs/'+night)
-        if not os.path.exists(outdir+'data_files/'+night):
-            os.system('mkdir '+outdir+'data_files/'+night)
-        if not os.path.exists(outdir+'logs/'+night):
-            os.system('mkdir '+outdir+'logs/'+night)
-    
-    logger_main = custom_logger(outdir+'logs/'+name+'_bsproc_main.log')
+        outdir = outdir_main+night+'/'
+        if not os.path.exists(outdir):
+            os.system('mkdir '+outdir)
+            os.system('mkdir '+outdir+'comp_star_check_plots/')
+            os.system('mkdir '+outdir+'ind_tel_lcs/')
+            os.system('mkdir '+outdir+'data_files/')
+            os.system('mkdir '+outdir+'logs/')
+     
+    logger_main = custom_logger(outdir_main+'master_logs/'+name+'_bsproc_main.log')
  #   actions = args.actions
     actions = np.array([], dtype=int)
     night_store = []
@@ -393,7 +389,7 @@ if __name__ == "__main__":
     ac_apers_min_target = np.array([])
     ac_apers_min_master = np.array([])
     for ac, ns in zip(actions, night_store):
-        logger = custom_logger(outdir+'logs/'+ns+'/'+name+'_night'+ns+f'_action{ac}.log')
+        logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
         print(' ')
         logger.info('Night '+ns+f': Running for Action{ac}...')
@@ -419,7 +415,7 @@ if __name__ == "__main__":
         except:
             airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')
         scint_noise = estimate_scintillation_noise(airmass, 10.)
-        phot_csv_file = outdir+'data_files/'+ns+f'/action{ac}_bsproc_dat.csv'
+        phot_csv_file = outdir+f'data_files/action{ac}_bsproc_dat.csv'
         if os.path.exists(phot_csv_file):
             logger.info('Phot CSV file already exists: '+phot_csv_file)
             logger.info('Adding "new" data to existing file...')
@@ -470,7 +466,7 @@ if __name__ == "__main__":
                 plt.xlabel('Tmag')
                 plt.ylabel('RMS (% per exposure)')
                 plt.title(name+'   Night '+ns+f'   Action {ac}   Aper {r} pix')
-                plt.savefig(outdir+'comp_star_check_plots/'+ns+f'/action{ac}_A{r}_mag_vs_rms.png')
+                plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_mag_vs_rms.png')
                 plt.close()
                 
                 fig, axes = plt.subplots(int((Ncomps+1)/2), 2, sharex=True,
@@ -488,7 +484,7 @@ if __name__ == "__main__":
                     leg = ax.legend(loc='upper center', frameon=False)
                     plt.setp(leg.get_texts(), color='k')
                 fig.subplots_adjust(hspace=0., wspace=0.)
-                plt.savefig(outdir+'comp_star_check_plots/'+ns+f'/action{ac}_A{r}_comp_star_comp0dt_lcs.png')
+                plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_comp_star_comp0dt_lcs.png')
                 plt.close()
             
             else:
@@ -525,7 +521,7 @@ if __name__ == "__main__":
                 plt.xlabel('Tmag')
                 plt.ylabel('RMS (% per exposure)')
                 plt.title(name+'   Night '+ns+f'   Action {ac}   Aper {r} pix')
-                plt.savefig(outdir+'comp_star_check_plots/'+ns+f'/action{ac}_A{r}_mag_vs_rms.png')
+                plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_mag_vs_rms.png')
                 plt.close()
                 
                 fig, axes = plt.subplots(int((Ncomps+1)/2), 2, sharex=True,
@@ -547,7 +543,7 @@ if __name__ == "__main__":
                     leg = ax.legend(loc='upper center', frameon=False)
                     plt.setp(leg.get_texts(), color=c)
                 fig.subplots_adjust(hspace=0., wspace=0.)
-                plt.savefig(outdir+'comp_star_check_plots/'+ns+f'/action{ac}_A{r}_comp_star_comp0dt_lcs.png')
+                plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_comp_star_comp0dt_lcs.png')
                 plt.close()
     
             master_comp = np.sum(comp_fluxes_good, axis=0)
@@ -605,7 +601,7 @@ if __name__ == "__main__":
             
             plt.title(name+'   Night '+ns+f'   Action {ac}   Aper {r} pix')
             
-            plt.savefig(outdir+'ind_tel_lcs/'+ns+f'/action{ac}_A{r}_lc.png')
+            plt.savefig(outdir+f'ind_tel_lcs/action{ac}_A{r}_lc.png')
             plt.close()
             
             df.to_csv(phot_csv_file,
@@ -620,7 +616,7 @@ if __name__ == "__main__":
         ax2.plot(np.array(r_ap), ap_comp_rms * 100, 'ro', label='MasterComp')
         ax2.set_ylabel('MasterComp Precision (%)', color='red')
         ax2.tick_params(axis='y', colors='red')
-        plt.savefig(outdir+'ind_tel_lcs/'+ns+f'/action{ac}_aperture_precisions.png')
+        plt.savefig(outdir+f'ind_tel_lcs/action{ac}_aperture_precisions.png')
         plt.close()
         
         ac_apers_min_target = np.append(ac_apers_min_target, np.array(r_ap)[ap_target_rms.argmin()])
@@ -634,7 +630,7 @@ if __name__ == "__main__":
     flux0_mc, err0_mc, skybg_mc = np.array([]), np.array([]), np.array([])
     for ac, ns, rt, rc in zip(actions, night_store, ac_apers_min_target, ac_apers_min_master):
         logger.info(f'Action {ac} - "Best" apers -  Target: {rt} pix; Comp: {rc} pix')
-        dat = pd.read_csv(outdir+'data_files/'+ns+f'/action{ac}_bsproc_dat.csv',
+        dat = pd.read_csv(outdir+f'data_files/action{ac}_bsproc_dat.csv',
                           index_col='NExposure')
         action_store = np.append(action_store, np.array([ac for i in range(len(dat))], dtype=int))
         bjd = np.append(bjd, np.array(dat.BJD))
