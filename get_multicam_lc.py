@@ -47,14 +47,14 @@ if __name__ == "__main__":
  #   root_dir = '/ngts/scratch/brightstars/PAOPhot2/'+name+'/'
     root_dir = args.output+'/'+name+'/'
     filedir = root_dir+'analyse_outputs/'+args.night+'/data_files/'
-    opdir = root_dir+'analyse_outputs/'
+    opdir = root_dir+'analyse_outputs/'+args.night+'/'
     bjd, flux, err = np.array([]), np.array([]), np.array([])
     flux0, err0 = np.array([]), np.array([])
     actions = np.array([])
     airmass = np.array([])
     skybg = np.array([])
     for ac in args.actions:
-        df = pd.read_csv(filedir+f'action{ac}_paophot2_dat.csv',
+        df = pd.read_csv(filedir+f'action{ac}_bsproc_dat.csv',
                          index_col='NExposure')
         t = np.array(df.BJD)
         f = np.array(df.loc[:, f'FluxNormA{args.aper}'])
@@ -84,14 +84,14 @@ if __name__ == "__main__":
     plt.xlabel('Time (BJD)')
     plt.ylabel('Norm Flux')
     
-    plt.savefig(root_dir+'analyse_outputs/'+name+f'_NGTS_'+args.night+f'_A{args.aper}_paophot2_lc.png')
+    plt.savefig(opdir+name+f'_NGTS_'+args.night+f'_A{args.aper}_bsproc_lc.png')
     plt.show(block=False)
     save = input('Save over autosaved plot? [y/n] :  ')
     if save == 'y':
-        plt.savefig(root_dir+'analyse_outputs/'+name+f'_NGTS_'+args.night+f'_A{args.aper}_paophot2_lc.png')
+        plt.savefig(opdir+name+f'_NGTS_'+args.night+f'_A{args.aper}_bsproc_lc.png')
     plt.close()
     
     op = np.column_stack((actions, bjd, airmass, flux, err, flux0, err0, skybg))
-    np.savetxt(opdir+name+f'_NGTS_'+args.night+f'_A{args.aper}_paophot2_lc.dat',
+    np.savetxt(opdir+name+f'_NGTS_'+args.night+f'_A{args.aper}_bsproc_lc.dat',
                op, header='ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg',
                fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
