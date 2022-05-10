@@ -17,7 +17,7 @@ def ParseArgs():
     parser.add_argument('--name', type=str)
     parser.add_argument('--night', type=str)
     parser.add_argument('--actions', type=int, nargs='*')
-    parser.add_argument('--aper', type=float, default=None)
+    parser.add_argument('--apers', type=float, nargs='*', default=None)
     parser.add_argument('--output', type=str, default='./bsproc_outputs/')
     return parser.parse_args()
 
@@ -53,14 +53,18 @@ if __name__ == "__main__":
     actions = np.array([])
     airmass = np.array([])
     skybg = np.array([])
-    for ac in args.actions:
+    if len(args.apers) == 1:
+        apers = [args.apers[0] for ac in args.actions]
+    else:
+        apers = args.apers
+    for ac, rap in zip(args.actions, args.apers):
         df = pd.read_csv(filedir+f'action{ac}_bsproc_dat.csv',
                          index_col='NExposure')
         t = np.array(df.BJD)
-        f = np.array(df.loc[:, f'FluxNormA{args.aper}'])
-        e = np.array(df.loc[:, f'FluxNormErrA{args.aper}'])
-        f0 = np.array(df.loc[:, f'FluxA{args.aper}'])
-        e0 = np.array(df.loc[:, f'FluxErrA{args.aper}'])
+        f = np.array(df.loc[:, f'FluxNormA{rap}'])
+        e = np.array(df.loc[:, f'FluxNormErrA{rap}'])
+        f0 = np.array(df.loc[:, f'FluxA{rap}'])
+        e0 = np.array(df.loc[:, f'FluxErrA{rap}'])
         
         bjd = np.append(bjd, t)
         flux = np.append(flux, f)
@@ -70,7 +74,7 @@ if __name__ == "__main__":
         actions = np.append(actions, np.zeros_like(t)+ac)
         
         am = np.array(df.Airmass)
-        bg = np.array(df.loc[:, f'SkyBgA{args.aper}'])
+        bg = np.array(df.loc[:, f'SkyBgA{rap}'])
         
         airmass = np.append(airmass, am)
         skybg = np.append(skybg, bg)
@@ -84,14 +88,14 @@ if __name__ == "__main__":
     plt.xlabel('Time (BJD)')
     plt.ylabel('Norm Flux')
     
-    plt.savefig(opdir+name+f'_NGTS_'+args.night+f'_A{args.aper}_bsproc_lc.png')
+    plt.savefig(opdir+name+f'_NGTS_'+args.night+f'_A{rap}_bsproc_lc.png')
     plt.show(block=False)
     save = input('Save over autosaved plot? [y/n] :  ')
     if save == 'y':
-        plt.savefig(opdir+name+f'_NGTS_'+args.night+f'_A{args.aper}_bsproc_lc.png')
+        plt.savefig(opdir+name+f'_NGTS_'+args.night+f'_A{rap}_bsproc_lc.png')
     plt.close()
     
     op = np.column_stack((actions, bjd, airmass, flux, err, flux0, err0, skybg))
-    np.savetxt(opdir+name+f'_NGTS_'+args.night+f'_A{args.aper}_bsproc_lc.dat',
+    np.savetxt(opdir+name+f'_NGTS_'+args.night+f'_A{rap}_bsproc_lc.dat',
                op, header='ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg',
                fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
