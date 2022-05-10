@@ -57,7 +57,7 @@ if __name__ == "__main__":
         apers = [args.apers[0] for ac in args.actions]
     else:
         apers = args.apers
-    for ac, rap in zip(args.actions, args.apers):
+    for ac, rap in zip(args.actions, apers):
         df = pd.read_csv(filedir+f'action{ac}_bsproc_dat.csv',
                          index_col='NExposure')
         t = np.array(df.BJD)
