@@ -46,8 +46,8 @@ if __name__ == "__main__":
     name = args.name
  #   root_dir = '/ngts/scratch/brightstars/PAOPhot2/'+name+'/'
     root_dir = args.output+'/'+name+'/'
-    filedir = root_dir+'analyse_outputs/data_files/'+args.night+'/'
-    opdir = root_dir+'analyse_outputs/data_files/'
+    filedir = root_dir+'analyse_outputs/'+args.night+'/data_files/'
+    opdir = root_dir+'analyse_outputs/'
     bjd, flux, err = np.array([]), np.array([]), np.array([])
     flux0, err0 = np.array([]), np.array([])
     actions = np.array([])
