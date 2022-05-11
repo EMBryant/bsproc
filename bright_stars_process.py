@@ -407,9 +407,18 @@ if __name__ == "__main__":
             skybgs = pyfits.getdata(phot_file_root+'FLUX_BKG.fits.bz2')
         except:
             skybgs = pyfits.getdata(phot_file_root+'FLUX_BKG.fits')
+        try:
+            psfs = pyfits.getdata(phot_file_root+'PSF.fits.bz2')
+        except:
+            psfs = pyfits.getdata(phot_file_root+'PSF.fits')
+        
         target_fluxes_full = np.copy(fluxes[0])
         target_bjd = np.copy(bjds[0])
         target_skys_full = np.copy(skybgs[0])
+        sep_centre_fwhm = np.copy(psfs[:, 1])
+        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)
+        rgw_fwhm = np.copy(psfs[:, -3])
+        
         try:
             airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')
         except:
@@ -423,8 +432,12 @@ if __name__ == "__main__":
         else:
             logger.info('No existing phot csv.')
             logger.info('Creating new phot file: '+phot_csv_file)
-            df = pd.DataFrame(np.column_stack((target_bjd, airmass)),
-                          columns=['BJD','Airmass'])
+            df = pd.DataFrame(np.column_stack((target_bjd, airmass,
+                                               sep_centre_fwhm,
+                                               tl_centre_fwhm,
+                                               rgw_fwhm)),
+                          columns=['BJD','Airmass','FWHM_SEP',
+                                   'FWHM_TL','FWHM_RGW'])
         
         comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask])
         comp_skys_full = np.copy(skybgs[idx==2][comp_mask])
@@ -624,6 +637,7 @@ if __name__ == "__main__":
     
     action_store = np.array([], dtype=int)
     airmass_store = np.array([])
+    fwhm_sep, fwhm_tl, fwhm_rgw = np.array([]), np.array([]), np.array([])
     bjd, flux_t, err_t = np.array([]), np.array([]), np.array([])
     flux_mc, err_mc = np.array([]), np.array([])
     flux0_t, err0_t, skybg_t = np.array([]), np.array([]), np.array([])
@@ -635,6 +649,9 @@ if __name__ == "__main__":
         action_store = np.append(action_store, np.array([ac for i in range(len(dat))], dtype=int))
         bjd = np.append(bjd, np.array(dat.BJD))
         airmass_store = np.append(airmass_store, np.array(dat.Airmass))
+        fwhm_sep = np.append(fwhm_sep, np.array(dat.FWHM_SEP))
+        fwhm_tl  = np.append(fwhm_tl,  np.array(dat.FWHM_TL))
+        fwhm_rgw = np.append(fwhm_rgw, np.array(dat.FWHM_RGW))
         flux_t = np.append(flux_t, np.array(dat.loc[:, f'FluxNormA{rt}']))
         err_t = np.append(err_t, np.array(dat.loc[:, f'FluxNormErrA{rt}']))
         flux_mc = np.append(flux_mc, np.array(dat.loc[:, f'FluxNormA{rc}']))
@@ -649,10 +666,12 @@ if __name__ == "__main__":
         
     opt  = np.column_stack((action_store, bjd, airmass_store,
                             flux_t, err_t,
-                            flux0_t, err0_t, skybg_t))
+                            flux0_t, err0_t, skybg_t,
+                            fwhm_sep, fwhm_tl, fwhm_rgw))
     opmc = np.column_stack((action_store, bjd, airmass_store,
                             flux_mc, err_mc,
-                            flux0_mc, err0_mc, skybg_mc))
+                            flux0_mc, err0_mc, skybg_mc,
+                            fwhm_sep, fwhm_tl, fwhm_rgw))
     
     ns1 = ''
     ns2 = ''
@@ -665,14 +684,14 @@ if __name__ == "__main__":
               f'\n Actions: {actions}' + \
               f'\n Aperture Radii: {ac_apers_min_target} pixels' + \
                '\n Note these apertures minimise the target flux RMS' + \
-               '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg'
+               '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg   FWHM_SEP   FWHM_TL   FWHM_RGW'
     
     headermc =  'Object: '+args.name+f'  (TIC-{tic})' + \
                 '\n Night(s): '+ns1 + \
                f'\n Actions: {actions}' + \
                f'\n Aperture Radii: {ac_apers_min_master} pixels' + \
                 '\n Note these apertures minimise the master comparison flux RMS' + \
-                '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg'
+                '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg   FWHM_SEP   FWHM_TL   FWHM_RGW'
                 
     np.savetxt(outdir+'/'+name+'_NGTS'+ns2+'_target_apers_bsproc_lc.dat',
                opt, header=headert,
