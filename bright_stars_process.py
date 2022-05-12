@@ -39,6 +39,8 @@ def ParseArgs():
                         help='Name of directory to save the test outputs in. Default is ./bsproc_outputs/')
     parser.add_argument('--aper', type=float, nargs='*', default=None,
                         help='Apertures to get light curves using. Full or half integers (eg. 2.0 3.0 4.5 6.0). OPTIONAL')
+    parser.add_argument('--cam', type=str, default=None,
+                        help='Camera to get light curves for. OPTIONAL')
     parser.add_argument('--bad_comp_tics', type=int, nargs='*', default=None,
                         help='TIC IDs of comparison stars to manually exclude. OPTIONAL')
     parser.add_argument('--bad_comp_inds', type=int, nargs='*', default=None,
@@ -252,7 +254,10 @@ if __name__ == "__main__":
         camp_id_zp = f'TOI-{toiid:05d}'
     for night in nights:     
         connection = pymysql.connect(host='ngtsdb', db='ngts_ops', user='pipe')
-        qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id_zp+"%'"
+        if args.camera is None:
+            qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id_zp+"%'"
+        else:
+            qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id_zp+"%' and camera_id="+args.camera
         with connection.cursor() as cur:
             cur.execute(qry)
             res = cur.fetchall()
@@ -261,8 +266,12 @@ if __name__ == "__main__":
  #           qry2 = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id_zp+"%'"
             logger_main.info('I found no actions for '+name+' for night '+night)
             logger_main.info('Checking for other actions for night '+night)
-            qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField'"
-            qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id_zp+"%'"
+            if args.camera is None:
+                qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField'"
+                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id_zp+"%'"
+            else:
+                qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField' and camera_id="+args.camera
+                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id_zp+"%' and camera_id="+args.camera
             with connection.cursor() as cur:
                 cur.execute(qry2)
                 res2 = cur.fetchall()
@@ -679,6 +688,10 @@ if __name__ == "__main__":
         ns1 += ' '+n
         ns2 += '_'+n
     
+    if args.camera is None:
+        camstr = ''
+    else:
+        camstr= '_cam'+args.camera+'_'
     headert =  'Object: '+args.name+f'  (TIC-{tic})' + \
                '\n Night(s): '+ns1 + \
               f'\n Actions: {actions}' + \
@@ -693,11 +706,11 @@ if __name__ == "__main__":
                 '\n Note these apertures minimise the master comparison flux RMS' + \
                 '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg   FWHM_SEP   FWHM_TL   FWHM_RGW'
                 
-    np.savetxt(outdir+'/'+name+'_NGTS'+ns2+'_target_apers_bsproc_lc.dat',
+    np.savetxt(outdir+'/'+name+'_NGTS'+ns2+camstr+'_target_apers_bsproc_lc.dat',
                opt, header=headert,
                fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
     
-    np.savetxt(outdir+'/'+name+'_NGTS'+ns2+'_master_apers_bsproc_lc.dat',
+    np.savetxt(outdir+'/'+name+'_NGTS'+ns2+camstr+'_master_apers_bsproc_lc.dat',
                opmc, header=headermc,
                fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
     
@@ -714,12 +727,12 @@ if __name__ == "__main__":
     ax2.set_ylabel('Norm Flux - Comp Apers', fontsize=14)
     ax2.set_title(f'Apers: {ac_apers_min_master}')
     
-    ax2.set_xlabel(f'Time (BJD - {t0}', fontsize=14)
+    ax2.set_xlabel(f'Time (BJD - {t0})', fontsize=14)
     
     plt.tight_layout()
-    plt.savefig(outdir+'/'+name+'_NGTS'+ns2+'_bsproc_tmp_lc.png')
+    plt.savefig(outdir+'/'+name+'_NGTS'+ns2+camstr+'_bsproc_tmp_lc.png')
     plt.show(block=False)
     save = input('Save over autosaved plot? [y/n] :  ')
     if save == 'y':
-        plt.savefig(outdir+'/'+name+'_NGTS'+ns2+'_bsproc_tmp_lc.png')
+        plt.savefig(outdir+'/'+name+'_NGTS'+ns2+camstr+'_bsproc_tmp_lc.png')
     plt.close()
