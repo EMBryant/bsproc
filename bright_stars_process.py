@@ -708,11 +708,11 @@ if __name__ == "__main__":
                 
     np.savetxt(outdir+'/'+name+'_NGTS'+ns2+camstr+'_target_apers_bsproc_lc.dat',
                opt, header=headert,
-               fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
+               fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f %.4f %.4f %.4f', delimiter=' ')
     
     np.savetxt(outdir+'/'+name+'_NGTS'+ns2+camstr+'_master_apers_bsproc_lc.dat',
                opmc, header=headermc,
-               fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
+               fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f %.4f %.4f %.4f', delimiter=' ')
     
     tbin_t, fbin_t, ebin_t = lb(bjd, flux_t, err_t, 5/1440.)
     tbin_mc, fbin_mc, ebin_mc = lb(bjd, flux_mc, err_mc, 5/1440.)
