@@ -39,7 +39,7 @@ def ParseArgs():
                         help='Name of directory to save the test outputs in. Default is ./bsproc_outputs/')
     parser.add_argument('--aper', type=float, nargs='*', default=None,
                         help='Apertures to get light curves using. Full or half integers (eg. 2.0 3.0 4.5 6.0). OPTIONAL')
-    parser.add_argument('--cam', type=str, default=None,
+    parser.add_argument('--camera', type=str, default=None,
                         help='Camera to get light curves for. OPTIONAL')
     parser.add_argument('--bad_comp_tics', type=int, nargs='*', default=None,
                         help='TIC IDs of comparison stars to manually exclude. OPTIONAL')
