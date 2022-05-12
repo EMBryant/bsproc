@@ -691,15 +691,15 @@ if __name__ == "__main__":
     if args.camera is None:
         camstr = ''
     else:
-        camstr= '_cam'+args.camera+'_'
-    headert =  'Object: '+args.name+f'  (TIC-{tic})' + \
+        camstr= '_cam'+args.camera
+    headert =  ' Object: '+args.name+f'  (TIC-{tic})       '+camstr + \
                '\n Night(s): '+ns1 + \
               f'\n Actions: {actions}' + \
               f'\n Aperture Radii: {ac_apers_min_target} pixels' + \
                '\n Note these apertures minimise the target flux RMS' + \
                '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg   FWHM_SEP   FWHM_TL   FWHM_RGW'
     
-    headermc =  'Object: '+args.name+f'  (TIC-{tic})' + \
+    headermc =  ' Object: '+args.name+f'  (TIC-{tic})       '+camstr + \
                 '\n Night(s): '+ns1 + \
                f'\n Actions: {actions}' + \
                f'\n Aperture Radii: {ac_apers_min_master} pixels' + \
