@@ -485,7 +485,7 @@ if __name__ == "__main__":
             fig, axes = plt.subplots(int((Ncomps_bad0+1)/2), 2, sharex=True,
                                      figsize=(12, 3*int((Ncomps_bad0+1)/2)))
             axes = axes.reshape(-1)
-            comp_flux0 = np.copy(comp_fluxes_full[0])
+            comp_flux0 = np.copy(comp_fluxes[0])
             for i, j in zip(range(Ncomps_bad0), comp_inds_bad0):
                 ax=axes[i]
                 comp_tic = comp_tics_bad0[i]
