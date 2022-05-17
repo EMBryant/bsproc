@@ -251,27 +251,28 @@ if __name__ == "__main__":
     #Find campaign name
     if name[:3] == 'TOI':
         toiid = int(name.split('-')[-1])
-        camp_id_zp = f'TOI-{toiid:05d}'
+        camp_id = f'TOI-{toiid:05d}'
+    elif name[:3] == 'TIC':
+        ticid = str(name.split('-')[-1])
+        camp_id = 'TIC-'+ticid
     for night in nights:     
         connection = pymysql.connect(host='ngtsdb', db='ngts_ops', user='pipe')
         if args.camera is None:
-            qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id_zp+"%'"
+            qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id+"%'"
         else:
-            qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id_zp+"%' and camera_id="+args.camera
+            qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id+"%' and camera_id="+args.camera
         with connection.cursor() as cur:
             cur.execute(qry)
             res = cur.fetchall()
         if len(res) < 0.5:
- #           camp_id_0  = f'TOI-{toiid}'
- #           qry2 = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id_zp+"%'"
             logger_main.info('I found no actions for '+name+' for night '+night)
             logger_main.info('Checking for other actions for night '+night)
             if args.camera is None:
                 qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField'"
-                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id_zp+"%'"
+                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id+"%'"
             else:
                 qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField' and camera_id="+args.camera
-                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id_zp+"%' and camera_id="+args.camera
+                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id+"%' and camera_id="+args.camera
             with connection.cursor() as cur:
                 cur.execute(qry2)
                 res2 = cur.fetchall()
