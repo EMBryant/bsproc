@@ -460,7 +460,7 @@ if __name__ == "__main__":
         comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask])
         comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask])
         comp_tics_bad0 = np.copy(tic_ids[idx==2][~comp_mask])
-        Ncomps_bad0 = np.sum(~comp_mask)
+        Ncomps_bad0 = len(comp_tics_bad0)
         comp_inds_bad0 = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[~comp_mask]
         
         
