@@ -473,7 +473,7 @@ if __name__ == "__main__":
             
             comp_fluxes_bad = np.vstack(([np.copy(cfb[:, idr])
                                           for cfb in comp_fluxes_bad0]))
-            
+            print('Starting Plotting')
             fig, axes = plt.subplots(int((Ncomps_bad0+1)/2), 2, sharex=True,
                                      figsize=(12, 3*int((Ncomps_bad0+1)/2)))
             axes = axes.reshape(-1)
@@ -489,9 +489,11 @@ if __name__ == "__main__":
                 leg = ax.legend(loc='upper center', frameon=False)
                 plt.setp(leg.get_texts(), color='k')
             fig.subplots_adjust(hspace=0., wspace=0.)
+            print('Finished Plotting')
+            print('Now saving')
             plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_global_rejected_comp_stars_comp0dt_lcs.png')
             plt.close()
-            
+            print('Finished saving')
             if args.force_comp_stars:
                 logger.info('User defined comparisons. Skipping bad comp rejection.')
                 comp_fluxes_good = np.copy(comp_fluxes)
