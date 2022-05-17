@@ -347,7 +347,7 @@ if __name__ == "__main__":
     tmags_comps = tmags_full[idx==2]
     
     if args.force_comp_stars:
-        logger_main.info('Nights {nights}: Using user defined comparison stars.')
+        logger_main.info(f'Nights {nights}: Using user defined comparison stars.')
         if args.comp_inds is not None:
             comp_mask = np.array([True if i in args.comp_inds else False 
                                   for i in range(100)])
@@ -373,7 +373,7 @@ if __name__ == "__main__":
             comp_mask_2 = [False if i in args.bad_comp_inds else True
                            for i in range(100)]
             comp_mask &= comp_mask_2
-        logger_main.info('Nights {nights}: Checking comp star brightness')
+        logger_main.info(f'Nights {nights}: Checking comp star brightness')
         bad_mag_inds = []
         bad_mag_tics = []
         for i, tici in zip(range(len(tmags_comps)), tic_ids[idx==2]):
@@ -457,6 +457,31 @@ if __name__ == "__main__":
         Ncomps_full = len(comp_mask)
         comp_inds_full = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[comp_mask]
         
+        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask])
+        comp_bjds_bad0 = np.copy(bjds[idx==2][comp_mask])
+        comp_tics_bad0 = np.copy(tic_ids[idx==2][comp_mask])
+        Ncomps_bad0 = np.sum(~comp_mask)
+        comp_inds_bad0 = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[~comp_mask]
+        
+        
+        fig, axes = plt.subplots(int((Ncomps_bad0+1)/2), 2, sharex=True,
+                                 figsize=(12, 3*int((Ncomps_bad0+1)/2)))
+        axes = axes.reshape(-1)
+        comp_flux0 = np.copy(comp_fluxes_full[0])
+        for i, j in zip(range(Ncomps_bad0), comp_inds_bad0):
+            ax=axes[i]
+            comp_tic = comp_tics_bad0[i]
+            comp_flux = np.copy(comp_fluxes_bad0[i])
+            comp_flux_corrected = comp_flux / comp_flux0
+        #    comp_flux_norm = comp_flux_corrected / np.median(comp_flux_corrected)
+            ax.plot(comp_bjds_bad0[i], comp_flux_corrected, '.k', alpha=0.5,
+                    label=f'{j}:  TIC-{comp_tic}')
+            leg = ax.legend(loc='upper center', frameon=False)
+            plt.setp(leg.get_texts(), color='k')
+        fig.subplots_adjust(hspace=0., wspace=0.)
+        plt.savefig(outdir+f'comp_star_check_plots/action{ac}_global_rejected_comp_stars_comp0dt_lcs.png')
+        plt.close()
+    
         ap_target_rms = np.array([])
         ap_comp_rms = np.array([])
         
