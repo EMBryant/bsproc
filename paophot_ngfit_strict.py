@@ -92,7 +92,8 @@ def lnprob(theta, params, model, sap, err, airmass, aids, actions, tc1, tc2):
 
 def plot_2cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
-               model_best, model_med):
+               model_best, model_med,
+               output):
     tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
     tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
     offset = int(bjd[0])
@@ -119,7 +120,7 @@ def plot_2cams(bjd, pdc, pdcerr,
         ax.legend(loc='upper left', frameon=False)
     fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig1.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_bestpms.png')
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
         
     fig2 = plt.figure(figsize=(18, 12))
     ax1 = fig2.add_subplot(211)
@@ -144,14 +145,15 @@ def plot_2cams(bjd, pdc, pdcerr,
     
     fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig2.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_medpms.png')
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
     
     plt.show()
     return fig1, fig2
 
 def plot_3cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
-               model_best, model_median):
+               model_best, model_median,
+               output):
     tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
     tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
     offset = int(bjd[0])
@@ -180,7 +182,7 @@ def plot_3cams(bjd, pdc, pdcerr,
         
     fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig1.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_bestpms.png')
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
        
     fig2 = plt.figure(figsize=(18, 12))
     ax1 = fig2.add_subplot(211)
@@ -206,14 +208,15 @@ def plot_3cams(bjd, pdc, pdcerr,
     
     fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig2.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_medpms.png')
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
     
     plt.show()
     return fig1, fig2
 
 def plot_4cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
-               model_best, model_median):
+               model_best, model_median,
+               output):
     tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
     tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
     offset = int(bjd[0])
@@ -243,7 +246,7 @@ def plot_4cams(bjd, pdc, pdcerr,
         
     fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig1.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_bestpms.png')
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
         
     fig2 = plt.figure(figsize=(18, 12))
     ax1 = fig2.add_subplot(311)
@@ -270,14 +273,15 @@ def plot_4cams(bjd, pdc, pdcerr,
     
     fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig2.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_medpms.png')
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
     
     plt.show()
     return fig1, fig2
 
 def plot_5cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
-               model_best, model_median):
+               model_best, model_median,
+               output):
     tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
     tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
     offset = int(bjd[0])
@@ -308,7 +312,7 @@ def plot_5cams(bjd, pdc, pdcerr,
     
     fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig1.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_bestpms.png')
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
             
     fig2 = plt.figure(figsize=(18, 12))
     ax1 = fig2.add_subplot(311)
@@ -336,14 +340,15 @@ def plot_5cams(bjd, pdc, pdcerr,
     
     fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig2.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_medpms.png')
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
     
     plt.show()
     return fig1, fig2
 
 def plot_6cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
-               model_best, model_median):
+               model_best, model_median,
+               output):
     tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
     tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
     offset = int(bjd[0])
@@ -375,7 +380,7 @@ def plot_6cams(bjd, pdc, pdcerr,
         
     fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig1.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_bestpms.png')
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
        
     fig2 = plt.figure(figsize=(18, 12))
     ax1 = fig2.add_subplot(311)
@@ -404,14 +409,15 @@ def plot_6cams(bjd, pdc, pdcerr,
     
     fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig2.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_medpms.png')
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
     
     plt.show()
     return fig1, fig2
 
 def plot_7cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
-               model_best, model_median):
+               model_best, model_median,
+               output):
     tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
     tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
     offset = int(bjd[0])
@@ -444,7 +450,7 @@ def plot_7cams(bjd, pdc, pdcerr,
 
     fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig1.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_bestpms.png')
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
 
     fig2 = plt.figure(figsize=(18, 12))
     ax1 = fig2.add_subplot(311)
@@ -474,14 +480,15 @@ def plot_7cams(bjd, pdc, pdcerr,
 
     fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig2.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_medpms.png')
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
 
     plt.show()
     return fig1, fig2
 
 def plot_8cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
-               model_best, model_median):
+               model_best, model_median,
+               output):
     tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
     tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
     offset = int(bjd[0])
@@ -515,7 +522,7 @@ def plot_8cams(bjd, pdc, pdcerr,
 
     fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig1.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_bestpms.png')
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
 
     fig2 = plt.figure(figsize=(18, 12))
     ax1 = fig2.add_subplot(311)
@@ -546,7 +553,7 @@ def plot_8cams(bjd, pdc, pdcerr,
 
     fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
                          hspace=0.15, wspace=0.1)
-    fig2.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_lc_medpms.png')
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
 
     plt.show()
     return fig1, fig2
@@ -554,6 +561,7 @@ def plot_8cams(bjd, pdc, pdcerr,
 if __name__ == "__main__":
     args = ParseArgs()
     lc = np.loadtxt(args.file_name)
+    opdir_root = '/'.join(args.file_name.split('/')[:-1])+'/fit_outputs/'
     start, end = args.start, args.end
     bjd0 = np.copy(lc[:, 1])
     bjd0 -= np.int(bjd0[0])
@@ -569,11 +577,11 @@ if __name__ == "__main__":
     
     obj = args.obj
     night = args.night
-    if not os.path.exists(obj+'/fit_outputs'):
-        os.system('mkdir '+obj+'/fit_outputs')
-    
-    if not os.path.exists(obj+'/fit_outputs/'+night):
-        os.system('mkdir '+obj+'/fit_outputs/'+night)
+    if not os.path.exists(opdir_root):
+        os.system('mkdir '+opdir_root)
+    opdir = opdir_root+night+'/'
+    if not os.path.exists(opdir):
+        os.system('mkdir '+opdir)
     
     tc0 = args.tc
     if tc0 is None:
@@ -636,7 +644,7 @@ if __name__ == "__main__":
         for j in range(nwalkers):
             ax.semilogx(burninchains[j][:, i], 'k-')
             ax.set_ylabel(lbl)
-    plt.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_strict_burninchains.png')
+    plt.savefig(opdir+obj+'_strict_burninchains.png')
     plt.close()
     sampler.reset()
     print('Sampling... ')
@@ -645,7 +653,7 @@ if __name__ == "__main__":
     loglike = sampler.flatlnprobability
     df = pd.DataFrame(np.column_stack((samples, loglike)),
                       columns=labels+['lnP'])
-    df.to_csv(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_samples.csv',
+    df.to_csv(opdir+obj+'_ngfit_strict_samples.csv',
               index_label='NIter')
     params_best = samples[loglike.argmax()]
     params_med = np.median(samples, axis=0)
@@ -682,35 +690,41 @@ if __name__ == "__main__":
                          title_fmt='.6f', kwargs={'fontsize':'12'},
                          truths=vals_best, truth_color='C1')
             
-    plt.savefig(obj+'/fit_outputs/'+night+'/'+obj+'_ngfit_strict_corner.png')
+    plt.savefig(opdir+obj+'_ngfit_strict_corner.png')
     plt.close()
     
     if abs(Nactions - 2) <= 0.1:
         fig1, fig2 = plot_2cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
-                                model_best, model_med)
+                                model_best, model_med,
+                                opdir)
     elif abs(Nactions - 3) <= 0.1:
         fig1, fig2 = plot_3cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
-                                model_best, model_med)
+                                model_best, model_med,
+                                opdir)
     elif abs(Nactions - 4) <= 0.1:
         fig1, fig2 = plot_4cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
-                                model_best, model_med)
+                                model_best, model_med,
+                                opdir)
     elif abs(Nactions - 5) <= 0.1:
         fig1, fig2 = plot_5cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
-                                model_best, model_med)
+                                model_best, model_med,
+                                opdir)
     elif abs(Nactions - 6) <= 0.1:
         fig1, fig2 = plot_6cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
-                                model_best, model_med)
+                                model_best, model_med,
+                                opdir)
     elif abs(Nactions - 7) <= 0.1:
         fig1, fig2 = plot_7cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
-                                model_best, model_med)
-
+                                model_best, model_med,
+                                opdir)
     elif abs(Nactions - 8) <= 0.1:
         fig1, fig2 = plot_8cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
-                                model_best, model_med)
+                                model_best, model_med,
+                                opdir)
