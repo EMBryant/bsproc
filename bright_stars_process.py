@@ -473,10 +473,10 @@ if __name__ == "__main__":
             
             comp_fluxes_bad = np.vstack(([np.copy(cfb[:, idr])
                                           for cfb in comp_fluxes_bad0]))
-            print('Starting Plotting')
+            #print('Starting Plotting')
             fig, axes = plt.subplots(int((Ncomps_bad0+1)/2), 2, sharex=True,
                                      figsize=(12, 3*int((Ncomps_bad0+1)/2)))
-            print('Made the figure instance')
+            #print('Made the figure instance')
             axes = axes.reshape(-1)
             comp_flux0 = np.copy(comp_fluxes[0])
             for i, j in zip(range(Ncomps_bad0), comp_inds_bad0):
@@ -490,7 +490,7 @@ if __name__ == "__main__":
                 leg = ax.legend(loc='upper center', frameon=False)
                 plt.setp(leg.get_texts(), color='k')
             fig.subplots_adjust(hspace=0., wspace=0.)
-            print('Finished Plotting')
+            #print('Finished Plotting')
             plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_global_rejected_comp_stars_comp0dt_lcs.png')
             plt.close()
             if args.force_comp_stars:
@@ -752,8 +752,9 @@ if __name__ == "__main__":
     
     plt.tight_layout()
     plt.savefig(outdir+'/'+name+'_NGTS'+ns2+camstr+'_bsproc_tmp_lc.png')
-    plt.show(block=False)
-    save = input('Save over autosaved plot? [y/n] :  ')
-    if save == 'y':
-        plt.savefig(outdir+'/'+name+'_NGTS'+ns2+camstr+'_bsproc_tmp_lc.png')
+    plt.show()
+   # plt.show(block=False)
+   # save = input('Save over autosaved plot? [y/n] :  ')
+   # if save == 'y':
+   #     plt.savefig(outdir+'/'+name+'_NGTS'+ns2+camstr+'_bsproc_tmp_lc.png')
     plt.close()
