@@ -257,43 +257,53 @@ if __name__ == "__main__":
             cur.execute(qry)
             res = cur.fetchall()
         if len(res) < 0.5:
-            logger_main.info('I found no actions for '+name+' for night '+night)
-            logger_main.info('Checking for other actions for night '+night)
-            if args.camera is None:
-                qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField'"
-                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id+"%'"
-            else:
-                qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField' and camera_id="+args.camera
-                qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id+"%' and camera_id="+args.camera
-            with connection.cursor() as cur:
-                cur.execute(qry2)
-                res2 = cur.fetchall()
-            if len(res2) < 0.5:
-                logger_main.info('Found no actions for other objects for night '+night)
-            else:
-                logger_main.info('Found actions for other objects from night '+night+':')
-                for r in res2:
-                    logger_main.info(f'{r}')
-            logger_main.info('Checking for other actions for '+name+' on different nights')
-            with connection.cursor() as cur:
-                cur.execute(qry3)
-                res3 = cur.fetchall()
-            if len(res3) < 0.5:
-                logger_main.info('Found no actions for '+name+' on other nights')
-            else:
-                logger_main.info('Found actions for '+name+' on other nights:')
-                for r in res3:
-                    logger_main.info(f'{r}')
-            if len(res2) < 0.5 and len(res3) < 0.5:
-                raise ValueError('Found no actions for '+name+' or on '+night+'. Check your inputs.')
-                
-            elif len(res2) > 0.5 and len(res3) < 0.5:
-                raise ValueError('Found no actions at all for '+name+' but found actions for other objects on '+night+'. Check your inputs.')
-            
-            elif len(res2) < 0.5 and len(res3) > 0.5:
-                raise ValueError('Found actions for '+name+' on other nights but none on '+night+'. Check your inputs.')
-            else:
-                raise ValueError('Found actions for '+name+' on other nights and actions for other objects on '+night+'. Check your inputs.')
+            if name[:3] == 'TOI':
+                camp_id2 = f'TOI-{toiid}'
+                if args.camera is None:
+                    qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id2+"%'"
+                else:
+                    qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id2+"%' and camera_id="+args.camera
+                with connection.cursor() as cur:
+                    cur.execute(qry)
+                    res = cur.fetchall()
+                if len(res) < 0.5:
+                    logger_main.info('I found no actions for '+name+' for night '+night)
+                    logger_main.info('Checking for other actions for night '+night)
+                    if args.camera is None:
+                        qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField'"
+                        qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id+"%'"
+                    else:
+                        qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField' and camera_id="+args.camera
+                        qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id+"%' and camera_id="+args.camera
+                    with connection.cursor() as cur:
+                        cur.execute(qry2)
+                        res2 = cur.fetchall()
+                    if len(res2) < 0.5:
+                        logger_main.info('Found no actions for other objects for night '+night)
+                    else:
+                        logger_main.info('Found actions for other objects from night '+night+':')
+                        for r in res2:
+                            logger_main.info(f'{r}')
+                    logger_main.info('Checking for other actions for '+name+' on different nights')
+                    with connection.cursor() as cur:
+                        cur.execute(qry3)
+                        res3 = cur.fetchall()
+                    if len(res3) < 0.5:
+                        logger_main.info('Found no actions for '+name+' on other nights')
+                    else:
+                        logger_main.info('Found actions for '+name+' on other nights:')
+                        for r in res3:
+                            logger_main.info(f'{r}')
+                    if len(res2) < 0.5 and len(res3) < 0.5:
+                        raise ValueError('Found no actions for '+name+' or on '+night+'. Check your inputs.')
+                        
+                    elif len(res2) > 0.5 and len(res3) < 0.5:
+                        raise ValueError('Found no actions at all for '+name+' but found actions for other objects on '+night+'. Check your inputs.')
+                    
+                    elif len(res2) < 0.5 and len(res3) > 0.5:
+                        raise ValueError('Found actions for '+name+' on other nights but none on '+night+'. Check your inputs.')
+                    else:
+                        raise ValueError('Found actions for '+name+' on other nights and actions for other objects on '+night+'. Check your inputs.')
 
         logger_main.info(f'Found {len(res)} actions for '+name+' for night '+night)
         for r in res:
