@@ -558,6 +558,81 @@ def plot_8cams(bjd, pdc, pdcerr,
     plt.show()
     return fig1, fig2
 
+def plot_9cams(bjd, pdc, pdcerr,
+               pdcmed, pdcerrmed,
+               model_best, model_median,
+               output):
+    tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
+    tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
+    offset = int(bjd[0])
+    s = bjd.argsort()
+    fig1 = plt.figure(figsize=(18, 12))
+    ax1 = fig1.add_subplot(411)
+    ax1.plot(bjd, pdc, 'k.', alpha=0.4, ms=2, zorder=1)
+    ax1.errorbar(tbin, fbin, yerr=ebin, fmt='bo', ms=5, zorder=5)
+    ax1.plot(bjd[s], model_best[s], 'r-', zorder=4)
+    ax1.set_xlabel(f'BJD - [{offset}]')
+    ax1.set_ylabel(f'NGTS Flux')
+    ax1.set_title(obj+'  NGTS  ngfit - Best')
+
+    ax2 = fig1.add_subplot(434)
+    ax3 = fig1.add_subplot(435)
+    ax4 = fig1.add_subplot(436)
+    ax5 = fig1.add_subplot(437)
+    ax6 = fig1.add_subplot(438)
+    ax7 = fig1.add_subplot(439)
+    ax8 = fig1.add_subplot(4,3,10)
+    ax9 = fig1.add_subplot(4,3,11)
+    ax10= fig1.add_subplot(4,3,12)
+    axes = [ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10]
+    for ax, ac in zip(axes, aids):
+        idt = actions==ac
+        ti, fi, ei, dti, lci = bjd[idt], sap[idt], err[idt], lc_oot[idt], model_best[idt]
+        tbi, fbi, ebi = lb(ti, fi, ei, 5/1440.)
+        ax.plot(ti, fi, '.k', alpha=0.4, ms=2, zorder=1, label=str(ac))
+        ax.errorbar(tbi, fbi, yerr=ebi, fmt='bo', ms=5, zorder=5)
+        ax.plot(ti, lci*dti, 'C1-', zorder=3)
+        ax.legend(loc='upper left', frameon=False)
+
+    fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
+                         hspace=0.15, wspace=0.1)
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
+
+    fig2 = plt.figure(figsize=(18, 12))
+    ax1 = fig2.add_subplot(411)
+    ax1.plot(bjd, pdcmed, 'k.', alpha=0.4, ms=2, zorder=1)
+    ax1.errorbar(tbinm, fbinm, yerr=ebinm, fmt='bo', ms=5, zorder=5)
+    ax1.plot(bjd[s], model_med[s], 'r-', zorder=4)
+    ax1.set_xlabel(f'BJD - [{offset}]')
+    ax1.set_ylabel(f'NGTS Flux')
+    ax1.set_title(obj+'  NGTS  ngfit - Median')
+
+    ax2 = fig1.add_subplot(434)
+    ax3 = fig1.add_subplot(435)
+    ax4 = fig1.add_subplot(436)
+    ax5 = fig1.add_subplot(437)
+    ax6 = fig1.add_subplot(438)
+    ax7 = fig1.add_subplot(439)
+    ax8 = fig1.add_subplot(4,3,10)
+    ax9 = fig1.add_subplot(4,3,11)
+    ax10= fig1.add_subplot(4,3,12)
+    axes = [ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10]
+    for ax, ac in zip(axes, aids):
+        idt = actions==ac
+        ti, fi, ei, dti, lci = bjd[idt], sap[idt], err[idt], lc_oot_med[idt], model_med[idt]
+        tbi, fbi, ebi = lb(ti, fi, ei, 5/1440.)
+        ax.plot(ti, fi, '.k', alpha=0.4, ms=2, zorder=1, label=str(ac))
+        ax.errorbar(tbi, fbi, yerr=ebi, fmt='bo', ms=5, zorder=5)
+        ax.plot(ti, lci*dti, 'C1-', zorder=3)
+        ax.legend(loc='upper left', frameon=False)
+
+    fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
+                         hspace=0.15, wspace=0.1)
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
+
+    plt.show()
+    return fig1, fig2
+
 if __name__ == "__main__":
     args = ParseArgs()
     lc = np.loadtxt(args.file_name)
@@ -725,6 +800,11 @@ if __name__ == "__main__":
                                 opdir)
     elif abs(Nactions - 8) <= 0.1:
         fig1, fig2 = plot_8cams(bjd, pdc, pdcerr,
+                                pdcmed, pdcerrmed,
+                                model_best, model_med,
+                                opdir)
+    elif abs(Nactions - 9) <= 0.1:
+        fig1, fig2 = plot_9cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
                                 model_best, model_med,
                                 opdir)
