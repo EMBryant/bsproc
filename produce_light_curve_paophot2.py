@@ -237,13 +237,30 @@ if __name__ == "__main__":
         logger.info(f'Running for Action{ac}...')
         os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+bsdir+'action_summaries/')
         phot_file_root = root_dir+f'photometry/action{ac}/ACITON_{ac}_'
-        bjds = pyfits.getdata(phot_file_root+'BJD.fits')
-        fluxes = pyfits.getdata(phot_file_root+'FLUX.fits')
-        skybgs = pyfits.getdata(phot_file_root+'FLUX_BKG.fits')
+        try:
+            bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
+        except:
+            bjds = pyfits.getdata(phot_file_root+'BJD.fits')
+        try:
+            fluxes = pyfits.getdata(phot_file_root+'FLUX.fits.bz2')
+        except:
+            fluxes = pyfits.getdata(phot_file_root+'FLUX.fits')
+        try:
+            skybgs = pyfits.getdata(phot_file_root+'FLUX_BKG.fits.bz2')
+        except:
+            skybgs = pyfits.getdata(phot_file_root+'FLUX_BKG.fits')
+        try:
+            psfs = pyfits.getdata(phot_file_root+'PSF.fits.bz2')
+        except:
+            psfs = pyfits.getdata(phot_file_root+'PSF.fits')
+        
         target_fluxes_full = np.copy(fluxes[0])
         target_bjd = np.copy(bjds[0])
         target_skys_full = np.copy(skybgs[0])
-        airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')
+        try:
+            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')
+        except:
+            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')
         scint_noise = estimate_scintillation_noise(airmass, 10.)
         phot_csv_file = outdir+'data_files/'+night+f'/action{ac}_paophot2_dat.csv'
         if os.path.exists(phot_csv_file):
