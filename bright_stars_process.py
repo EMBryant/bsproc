@@ -400,18 +400,20 @@ if __name__ == "__main__":
 
     ac_apers_min_target = np.array([])
     ac_apers_min_master = np.array([])
+    missing_actions = np.array([])
     for ac, ns in zip(actions, night_store):
         logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
         print(' ')
-        logger.info('Night '+ns+f': Running for Action{ac}...')
-        try:
-            os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
-        except:
+        if not os.path.exists(root_dir+f'action_summaries/{ac}_TIC-{tic}.png'):
             logger.info(f'Can\'t find action summary for Action {ac}')
             logger_main.info(f'No action summary for Action {ac}')
             logger_main.info(f'Skipping Action {ac}.')
+            missing_actions = np.append(missing_actions, ac)
             continue
+        logger.info('Night '+ns+f': Running for Action{ac}...')
+        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
+        
         phot_file_root = root_dir+f'photometry/action{ac}/ACITON_{ac}_'
         try:
             bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
@@ -688,7 +690,8 @@ if __name__ == "__main__":
     flux_mc, err_mc = np.array([]), np.array([])
     flux0_t, err0_t, skybg_t = np.array([]), np.array([]), np.array([])
     flux0_mc, err0_mc, skybg_mc = np.array([]), np.array([]), np.array([])
-    for ac, ns, rt, rc in zip(actions, night_store, ac_apers_min_target, ac_apers_min_master):
+    ac_map = np.array([True if not ac in missing_actions else False for ac in actions])
+    for ac, ns, rt, rc in zip(actions[ac_map], np.array(night_store)[ac_map], ac_apers_min_target, ac_apers_min_master):
         logger.info(f'Action {ac} - "Best" apers -  Target: {rt} pix; Comp: {rc} pix')
         dat = pd.read_csv(outdir+f'data_files/action{ac}_bsproc_dat.csv',
                           index_col='NExposure')
