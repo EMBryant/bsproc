@@ -405,7 +405,13 @@ if __name__ == "__main__":
         print(' ')
         print(' ')
         logger.info('Night '+ns+f': Running for Action{ac}...')
-        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
+        try:
+            os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
+        except:
+            logger.info(f'Can\'t find action summary for Action {ac}')
+            logger_main.info(f'No action summary for Action {ac}')
+            logger_main.info(f'Skipping Action {ac}.')
+            continue
         phot_file_root = root_dir+f'photometry/action{ac}/ACITON_{ac}_'
         try:
             bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
