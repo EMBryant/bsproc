@@ -76,6 +76,9 @@ if __name__ == "__main__":
         actions = np.append(actions, np.zeros_like(t)+ac)
         
         am = np.array(df.Airmass)
+        fwhm_sep = np.array(df.FWHM_SEP)
+        fwhm_tl = np.array(df.FWHM_TL)
+        fwhm_rgw = np.array(df.FWHM_RGW)
         bg = np.array(df.loc[:, f'SkyBgA{rap}'])
         
         airmass = np.append(airmass, am)
@@ -97,14 +100,15 @@ if __name__ == "__main__":
         plt.savefig(opdir+name+f'_NGTS_'+args.night+f'_A{rap}_bsproc_lc.png')
     plt.close()
     
-    op = np.column_stack((actions, bjd, airmass, flux, err, flux0, err0, skybg))
+    op = np.column_stack((actions, bjd, airmass, flux, err, flux0, err0,
+                          skybg, fwhm_sep, fwhm_tl, fwhm_rgw))
     
     header =  'Object: '+args.name + \
               '\n Night: '+args.night + \
              f'\n Actions: {args.actions}' + \
              f'\n Aperture Radii: {apers} pixels' + \
-              '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg'
+              '\n ActionID   BJD   Airmass   FluxNorm   FluxNormErr   Flux   FluxErr  SkyBg   FWHM_SEP  FWHM_TL   FWHM_RGW'
     
     np.savetxt(file_name,
                op, header=header,
-               fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f', delimiter=' ')
+               fmt='%i %.8f %.6f %.8f %.8f %.8f %.8f %.3f %.3f %.3f %.3f', delimiter=' ')
