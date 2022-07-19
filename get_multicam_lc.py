@@ -52,6 +52,9 @@ if __name__ == "__main__":
     flux0, err0 = np.array([]), np.array([])
     actions = np.array([])
     airmass = np.array([])
+    fwhm_sep = np.array([])
+    fwhm_tl = np.array([])
+    fwhm_rgw = np.array([])
     skybg = np.array([])
     if len(args.apers) == 1:
         apers = [args.apers[0] for ac in args.actions]
@@ -76,12 +79,15 @@ if __name__ == "__main__":
         actions = np.append(actions, np.zeros_like(t)+ac)
         
         am = np.array(df.Airmass)
-        fwhm_sep = np.array(df.FWHM_SEP)
-        fwhm_tl = np.array(df.FWHM_TL)
-        fwhm_rgw = np.array(df.FWHM_RGW)
+        fw_sep = np.array(df.FWHM_SEP)
+        fw_tl = np.array(df.FWHM_TL)
+        fw_rgw = np.array(df.FWHM_RGW)
         bg = np.array(df.loc[:, f'SkyBgA{rap}'])
         
         airmass = np.append(airmass, am)
+        fwhm_sep = np.append(fwhm_sep, fw_sep)
+        fwhm_tl = np.append(fwhm_tl, fw_tl)
+        fwhm_rgw = np.append(fwhm_rgw, fw_rgw)
         skybg = np.append(skybg, bg)
     
     sig = np.std(flux)
