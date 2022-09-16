@@ -235,6 +235,7 @@ if __name__ == "__main__":
             os.system('mkdir '+outdir+'ind_tel_lcs/')
             os.system('mkdir '+outdir+'data_files/')
             os.system('mkdir '+outdir+'logs/')
+            os.system('mkdir '+outdir+'phot_files/')
      
     logger_main = custom_logger(outdir_main+'master_logs/'+name+'_bsproc_main.log')
  #   actions = args.actions
