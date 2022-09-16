@@ -727,6 +727,9 @@ if __name__ == "__main__":
     for n in nights:
         ns1 += ' '+n
         ns2 += '_'+n
+
+    if len(ns2) > 55:
+        ns2 = '{} to {}'.format(ns2[:10],ns2[-10])
     
     if args.camera is None:
         camstr = ''
