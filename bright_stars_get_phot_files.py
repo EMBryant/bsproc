@@ -248,6 +248,8 @@ if __name__ == "__main__":
     elif name[:3] == 'TIC':
         ticid = str(name.split('-')[-1])
         camp_id = 'TIC-'+ticid
+    elif name == 'WASP-166':
+        ticid = str(408310006)
     for night in nights:     
         connection = pymysql.connect(host='ngtsdb', db='ngts_ops', user='pipe')
         if args.camera is None:
