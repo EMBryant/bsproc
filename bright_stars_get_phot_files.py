@@ -342,6 +342,8 @@ if __name__ == "__main__":
                 raise ValueError('Couldn\'t find a TIC ID for '+name+'.')
             else:
                 tic = int(res[0])
+    elif name == 'WASP-166':
+        tic = 408310006
         logger_main.info(f'Object is TIC-{tic}')
                 
     star_cat = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
