@@ -343,7 +343,7 @@ if __name__ == "__main__":
         logger_main.info(f'Object is TIC-{tic}')
     elif name == 'HIP-41378':
         tic = 366443426
-        logger_main.info(f'Object is TIC-{tic}'
+        logger_main.info(f'Object is TIC-{tic}')
                 
     star_cat = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
     star_mask= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
