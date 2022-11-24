@@ -247,6 +247,8 @@ if __name__ == "__main__":
     elif name[:3] == 'TIC':
         ticid = str(name.split('-')[-1])
         camp_id = 'TIC-'+ticid
+    elif name == 'HIP-41378':
+        camp_id = 'HIP41378'
     for night in nights:     
         connection = pymysql.connect(host='ngtsdb', db='ngts_ops', user='pipe')
         if args.camera is None:
@@ -339,6 +341,9 @@ if __name__ == "__main__":
             else:
                 tic = int(res[0])
         logger_main.info(f'Object is TIC-{tic}')
+    elif name == 'HIP-41378':
+        tic = 366443426
+        logger_main.info(f'Object is TIC-{tic}'
                 
     star_cat = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
     star_mask= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
