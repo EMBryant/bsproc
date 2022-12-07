@@ -206,7 +206,7 @@ if __name__ == "__main__":
     if not os.path.exists(objdir):
         os.system('mkdir '+objdir)
     outdir_main = objdir+'analyse_outputs/'
-    root_dir = '/ngts/scratch/PAOPhot2/'
+    root_dir = '/ngts/PAOPhot2/'
     if not os.path.exists(outdir_main):
         os.system('mkdir '+outdir_main)
         os.system('mkdir '+outdir_main+'master_logs/')
