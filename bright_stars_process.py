@@ -768,7 +768,7 @@ if __name__ == "__main__":
     ax1.plot(bjd-t0, flux_t, '.k', alpha=0.3, zorder=1)
     ax1.errorbar(tbin_t-t0, fbin_t, yerr=ebin_t, fmt='bo', ecolor='cyan', zorder=2)
     ax1.set_ylabel('Norm Flux - Target Apers', fontsize=14)
-    ax1.set_title(name+'  Night(s): '+ns1+f'\nActions: {actions}\nApers: {ac_apers_min_target}')
+    ax1.set_title(name+'  Night(s): '+ns1+f'\nActions: {actions[ac_map]}\nApers: {ac_apers_min_target}')
     
     ax2.plot(bjd-t0, flux_mc, '.k', alpha=0.3, zorder=1)
     ax2.errorbar(tbin_mc-t0, fbin_mc, yerr=ebin_mc, fmt='bo', ecolor='cyan', zorder=2)
