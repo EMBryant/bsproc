@@ -410,8 +410,8 @@ if __name__ == "__main__":
         logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
         print(' ')
-        if not os.path.exists(root_dir+f'photometry/action{ac}'):
-            logger.info(f'Can\'t find photometry directory for Action {ac}')
+        if not os.path.exists(root_dir+f'photometry/action{ac}/ACITON_{ac}_BJD.fits.bz2'):
+            logger.info(f'Can\'t find photometry for Action {ac}')
             logger_main.info(f'No photometry for Action {ac}')
             logger_main.info(f'Skipping Action {ac}.')
             missing_actions = np.append(missing_actions, ac)
