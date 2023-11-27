@@ -464,9 +464,11 @@ if __name__ == "__main__":
         #New logic here to account for Runs with the --ignore_bjd flag having a shorter data array
         if ignore_run:
             now = datetime.now()
-            df_dir = f'{now.year}_{now.month}_{now.day}T{now.hour}_{now.minute}_{now.second}/'
-            os.system('mkdir '+outdir+'data_files/'+df_dir)
-            phot_csv_file = outdir+'data_files/'+df_dir+f'action{ac}_bsproc_dat.csv'
+            df_dir = f'IgnoreBJDRun_{now.year}_{now.month}_{now.day}T{now.hour}_{now.minute}_{now.second}/'
+            df_full_dir = outdir+'/data_files/'+df_dir
+            os.system('mkdir '+df_full_dir)
+            
+            phot_csv_file = df_full_dir+f'action{ac}_bsproc_dat.csv'
             
             logger.info('Ignore Run')
             logger.info('Creating new phot file: '+phot_csv_file)
@@ -477,7 +479,8 @@ if __name__ == "__main__":
                               columns=['BJD','Airmass','FWHM_SEP',
                                        'FWHM_TL','FWHM_RGW'])
         else:
-            phot_csv_file = outdir+f'data_files/action{ac}_bsproc_dat.csv'
+            df_full_dir = outdir+'data_files/'
+            phot_csv_file = df_full_dir+f'action{ac}_bsproc_dat.csv'
             if os.path.exists(phot_csv_file):
                 logger.info('Phot CSV file already exists: '+phot_csv_file)
                 logger.info('Adding "new" data to existing file...')
@@ -726,7 +729,7 @@ if __name__ == "__main__":
     ac_map = np.array([True if not ac in missing_actions else False for ac in actions])
     for ac, ns, rt, rc in zip(actions[ac_map], np.array(night_store)[ac_map], ac_apers_min_target, ac_apers_min_master):
         logger.info(f'Action {ac} - "Best" apers -  Target: {rt} pix; Comp: {rc} pix')
-        dat = pd.read_csv(outdir+f'data_files/action{ac}_bsproc_dat.csv',
+        dat = pd.read_csv(df_full_dir+f'action{ac}_bsproc_dat.csv',
                           index_col='NExposure')
         action_store = np.append(action_store, np.array([ac for i in range(len(dat))], dtype=int))
         bjd = np.append(bjd, np.array(dat.BJD))
