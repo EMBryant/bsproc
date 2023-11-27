@@ -195,6 +195,7 @@ def find_bad_comp_stars(comp_fluxes, airmass, comp_mags0,
     return comp_star_mask, comp_star_rms, i
 
 if __name__ == "__main__":
+    now = datetime.now()
     args = ParseArgs()
  #   tic = args.tic
     name = args.name
@@ -463,7 +464,6 @@ if __name__ == "__main__":
         scint_noise = estimate_scintillation_noise(airmass, float(args.exptime))
         #New logic here to account for Runs with the --ignore_bjd flag having a shorter data array
         if ignore_run:
-            now = datetime.now()
             df_dir = f'IgnoreBJDRun_{now.year}_{now.month}_{now.day}T{now.hour}_{now.minute}_{now.second}/'
             df_full_dir = outdir+'/data_files/'+df_dir
             os.system('mkdir '+df_full_dir)
