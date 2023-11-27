@@ -441,7 +441,7 @@ if __name__ == "__main__":
         
         target_bjd0 = np.copy(bjds[0])
         bjd_int = int(target_bjd0[0])
-        ignore = args.ignore
+        ignore = args.ignore_bjd
         ignore1, ignore2 = ignore[0]+bjd_int, ignore[1]+bjd_int
         bjd_keep = (target_bjd0 <= ignore1) | (target_bjd0 >= ignore2)
         target_bjd = np.copy(bjds[0])[bjd_keep]
