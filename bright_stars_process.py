@@ -479,8 +479,8 @@ if __name__ == "__main__":
         Ncomps_full = len(comp_mask)
         comp_inds_full = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[comp_mask]
         
-        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask][bjd_keep])
-        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask][bjd_keep])
+        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask][:, bjd_keep, :])
+        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask][:, bjd_keep])
         comp_tics_bad0 = np.copy(tic_ids[idx==2][~comp_mask])
         Ncomps_bad0 = len(comp_tics_bad0)
         comp_inds_bad0 = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[~comp_mask]
