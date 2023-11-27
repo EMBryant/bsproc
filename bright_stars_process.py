@@ -206,7 +206,7 @@ if __name__ == "__main__":
     if not os.path.exists(objdir):
         os.system('mkdir '+objdir)
     outdir_main = objdir+'analyse_outputs/'
-    root_dir = '/ngts/scratch/PAOPhot2/'
+    root_dir = '/ngts/PAOPhot2/'
     if not os.path.exists(outdir_main):
         os.system('mkdir '+outdir_main)
         os.system('mkdir '+outdir_main+'master_logs/')
@@ -247,6 +247,8 @@ if __name__ == "__main__":
     elif name[:3] == 'TIC':
         ticid = str(name.split('-')[-1])
         camp_id = 'TIC-'+ticid
+    elif name == 'HIP-41378':
+        camp_id = 'HIP41378'
     for night in nights:     
         connection = pymysql.connect(host='ngtsdb', db='ngts_ops', user='pipe')
         if args.camera is None:
@@ -339,6 +341,9 @@ if __name__ == "__main__":
             else:
                 tic = int(res[0])
         logger_main.info(f'Object is TIC-{tic}')
+    elif name == 'HIP-41378':
+        tic = 366443426
+        logger_main.info(f'Object is TIC-{tic}')
                 
     star_cat = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
     star_mask= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
@@ -405,14 +410,14 @@ if __name__ == "__main__":
         logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
         print(' ')
-        if not os.path.exists(root_dir+f'action_summaries/{ac}_TIC-{tic}.png'):
-            logger.info(f'Can\'t find action summary for Action {ac}')
-            logger_main.info(f'No action summary for Action {ac}')
+        if not os.path.exists(root_dir+f'photometry/action{ac}/ACITON_{ac}_BJD.fits.bz2'):
+            logger.info(f'Can\'t find photometry for Action {ac}')
+            logger_main.info(f'No photometry for Action {ac}')
             logger_main.info(f'Skipping Action {ac}.')
             missing_actions = np.append(missing_actions, ac)
             continue
         logger.info('Night '+ns+f': Running for Action{ac}...')
-        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
+#        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
         
         phot_file_root = root_dir+f'photometry/action{ac}/ACITON_{ac}_'
         try:
@@ -727,6 +732,9 @@ if __name__ == "__main__":
     for n in nights:
         ns1 += ' '+n
         ns2 += '_'+n
+
+    if len(ns2) > 55:
+        ns2 = '{} to {}'.format(ns2[:10],ns2[-10])
     
     if args.camera is None:
         camstr = ''
@@ -760,7 +768,7 @@ if __name__ == "__main__":
     ax1.plot(bjd-t0, flux_t, '.k', alpha=0.3, zorder=1)
     ax1.errorbar(tbin_t-t0, fbin_t, yerr=ebin_t, fmt='bo', ecolor='cyan', zorder=2)
     ax1.set_ylabel('Norm Flux - Target Apers', fontsize=14)
-    ax1.set_title(name+'  Night(s): '+ns1+f'\nActions: {actions}\nApers: {ac_apers_min_target}')
+    ax1.set_title(name+'  Night(s): '+ns1+f'\nActions: {actions[ac_map]}\nApers: {ac_apers_min_target}')
     
     ax2.plot(bjd-t0, flux_mc, '.k', alpha=0.3, zorder=1)
     ax2.errorbar(tbin_mc-t0, fbin_mc, yerr=ebin_mc, fmt='bo', ecolor='cyan', zorder=2)
