@@ -43,6 +43,8 @@ def ParseArgs():
                         help='BSProc IDs of comparison stars to use. REQUIRED if --force_comp_stars used')
     parser.add_argument('--comp_tics', type=int, nargs='*', default=None,
                         help='TIC IDs of comparison stars to use. REQUIRED if --force_comp_stars used')
+    parser.add_argument('--ignore_bjd', type=float, nargs=2, default=[0.2, 0.21],
+                        help='BJD Timespan (fractional day) to ignore within data e.g. due to clouds')
     parser.add_argument('--ti', type=float, default=None,
                         help='Time of ingress. Used for normalisation. OPTIONAL.')
     parser.add_argument('--te', type=float, default=None,
@@ -437,17 +439,22 @@ if __name__ == "__main__":
         except:
             psfs = pyfits.getdata(phot_file_root+'PSF.fits')
         
-        target_fluxes_full = np.copy(fluxes[0])
-        target_bjd = np.copy(bjds[0])
-        target_skys_full = np.copy(skybgs[0])
-        sep_centre_fwhm = np.copy(psfs[:, 1])
-        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)
-        rgw_fwhm = np.copy(psfs[:, -3])
+        target_bjd0 = np.copy(bjds[0])
+        bjd_int = int(target_bjd0[0])
+        ignore = args.ignore
+        ignore1, ignore2 = ignore[0]+bjd_int, ignore[1]+bjd_int
+        bjd_keep = (target_bjd0 <= ignore1) | (target_bjd0 >= ignore2)
+        target_bjd = np.copy(bjds[0])[bjd_keep]
+        target_fluxes_full = np.copy(fluxes[0])[bjd_keep]
+        target_skys_full = np.copy(skybgs[0])[bjd_keep]
+        sep_centre_fwhm = np.copy(psfs[:, 1])[bjd_keep]
+        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)[bjd_keep]
+        rgw_fwhm = np.copy(psfs[:, -3])[bjd_keep]
         
         try:
-            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')
+            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')[bjd_keep]
         except:
-            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')
+            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')[bjd_keep]
         scint_noise = estimate_scintillation_noise(airmass, 10.)
         phot_csv_file = outdir+f'data_files/action{ac}_bsproc_dat.csv'
         if os.path.exists(phot_csv_file):
@@ -464,16 +471,16 @@ if __name__ == "__main__":
                           columns=['BJD','Airmass','FWHM_SEP',
                                    'FWHM_TL','FWHM_RGW'])
         
-        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask])
-        comp_skys_full = np.copy(skybgs[idx==2][comp_mask])
-        comp_bjds = np.copy(bjds[idx==2][comp_mask])
+        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask][bjd_keep])
+        comp_skys_full = np.copy(skybgs[idx==2][comp_mask][bjd_keep])
+        comp_bjds = np.copy(bjds[idx==2][comp_mask][bjd_keep])
         comp_tics_full = np.copy(tic_ids[idx==2][comp_mask])
         comp_tmags_full = np.copy(tmags_comps[comp_mask])
         Ncomps_full = len(comp_mask)
         comp_inds_full = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[comp_mask]
         
-        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask])
-        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask])
+        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask][bjd_keep])
+        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask][bjd_keep])
         comp_tics_bad0 = np.copy(tic_ids[idx==2][~comp_mask])
         Ncomps_bad0 = len(comp_tics_bad0)
         comp_inds_bad0 = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[~comp_mask]
