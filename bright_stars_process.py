@@ -55,6 +55,8 @@ def ParseArgs():
                         help='Comparison stars fainter than the target, with a Tmag difference greater than this are excluded. OPTIONAL. Default is 3.5mag')
     parser.add_argument('--dmag', type=float, default=0.5,
                         help='Node spacing for comparison star rejection spline. OPTIONAL. Default is 0.5mag.')
+    parser.add_argument('--exptime', type=float, default=10.,
+                        help='Exposure time of observations')
     return parser.parse_args()
 
 def custom_logger(logger_name, level=logging.DEBUG):
@@ -455,7 +457,7 @@ if __name__ == "__main__":
             airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')[bjd_keep]
         except:
             airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')[bjd_keep]
-        scint_noise = estimate_scintillation_noise(airmass, 10.)
+        scint_noise = estimate_scintillation_noise(airmass, float(args.exptime))
         phot_csv_file = outdir+f'data_files/action{ac}_bsproc_dat.csv'
         if os.path.exists(phot_csv_file):
             logger.info('Phot CSV file already exists: '+phot_csv_file)
