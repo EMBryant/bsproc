@@ -471,9 +471,9 @@ if __name__ == "__main__":
                           columns=['BJD','Airmass','FWHM_SEP',
                                    'FWHM_TL','FWHM_RGW'])
         
-        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask][bjd_keep])
-        comp_skys_full = np.copy(skybgs[idx==2][comp_mask][bjd_keep])
-        comp_bjds = np.copy(bjds[idx==2][comp_mask][bjd_keep])
+        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask][:, bjd_keep, :])
+        comp_skys_full = np.copy(skybgs[idx==2][comp_mask][:, bjd_keep, :])
+        comp_bjds = np.copy(bjds[idx==2][comp_mask][:, bjd_keep])
         comp_tics_full = np.copy(tic_ids[idx==2][comp_mask])
         comp_tmags_full = np.copy(tmags_comps[comp_mask])
         Ncomps_full = len(comp_mask)
