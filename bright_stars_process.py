@@ -17,6 +17,7 @@ import logging
 from scipy.interpolate import InterpolatedUnivariateSpline as ius
 import pymysql
 import pymysql.cursors
+from datetime import datetime
 
 def ParseArgs():
     parser = ap.ArgumentParser()
@@ -239,6 +240,7 @@ if __name__ == "__main__":
             os.system('mkdir '+outdir+'ind_tel_lcs/')
             os.system('mkdir '+outdir+'data_files/')
             os.system('mkdir '+outdir+'logs/')
+        
      
     logger_main = custom_logger(outdir_main+'master_logs/'+name+'_bsproc_main.log')
  #   actions = args.actions
@@ -447,6 +449,7 @@ if __name__ == "__main__":
         ignore1, ignore2 = ignore[0]+bjd_int, ignore[1]+bjd_int
         bjd_keep = (target_bjd0 <= ignore1) | (target_bjd0 >= ignore2)
         target_bjd = np.copy(bjds[0])[bjd_keep]
+        ignore_run = (len(target_bjd) < len(target_bjd0))
         target_fluxes_full = np.copy(fluxes[0])[bjd_keep]
         target_skys_full = np.copy(skybgs[0])[bjd_keep]
         sep_centre_fwhm = np.copy(psfs[:, 1])[bjd_keep]
@@ -458,20 +461,36 @@ if __name__ == "__main__":
         except:
             airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')[bjd_keep]
         scint_noise = estimate_scintillation_noise(airmass, float(args.exptime))
-        phot_csv_file = outdir+f'data_files/action{ac}_bsproc_dat.csv'
-        if os.path.exists(phot_csv_file):
-            logger.info('Phot CSV file already exists: '+phot_csv_file)
-            logger.info('Adding "new" data to existing file...')
-            df = pd.read_csv(phot_csv_file, index_col='NExposure')
-        else:
-            logger.info('No existing phot csv.')
+        #New logic here to account for Runs with the --ignore_bjd flag having a shorter data array
+        if ignore_run:
+            now = datetime.now()
+            df_dir = f'{now.year}_{now.month}_{now.day}T{now.hour}_{now.minute}_{now.second}/'
+            os.system('mkdir '+outdir+'data_files/'+df_dir)
+            phot_csv_file = outdir+'data_files/'+df_dir+f'action{ac}_bsproc_dat.csv'
+            
+            logger.info('Ignore Run')
             logger.info('Creating new phot file: '+phot_csv_file)
             df = pd.DataFrame(np.column_stack((target_bjd, airmass,
                                                sep_centre_fwhm,
                                                tl_centre_fwhm,
                                                rgw_fwhm)),
-                          columns=['BJD','Airmass','FWHM_SEP',
-                                   'FWHM_TL','FWHM_RGW'])
+                              columns=['BJD','Airmass','FWHM_SEP',
+                                       'FWHM_TL','FWHM_RGW'])
+        else:
+            phot_csv_file = outdir+f'data_files/action{ac}_bsproc_dat.csv'
+            if os.path.exists(phot_csv_file):
+                logger.info('Phot CSV file already exists: '+phot_csv_file)
+                logger.info('Adding "new" data to existing file...')
+                df = pd.read_csv(phot_csv_file, index_col='NExposure')
+            else:
+                logger.info('No existing phot csv.')
+                logger.info('Creating new phot file: '+phot_csv_file)
+                df = pd.DataFrame(np.column_stack((target_bjd, airmass,
+                                                   sep_centre_fwhm,
+                                                   tl_centre_fwhm,
+                                                   rgw_fwhm)),
+                              columns=['BJD','Airmass','FWHM_SEP',
+                                       'FWHM_TL','FWHM_RGW'])
         
         comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask][:, bjd_keep, :])
         comp_skys_full = np.copy(skybgs[idx==2][comp_mask][:, bjd_keep, :])
