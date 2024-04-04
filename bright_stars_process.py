@@ -17,6 +17,7 @@ import logging
 from scipy.interpolate import InterpolatedUnivariateSpline as ius
 import pymysql
 import pymysql.cursors
+from datetime import datetime
 
 def ParseArgs():
     parser = ap.ArgumentParser()
@@ -43,6 +44,8 @@ def ParseArgs():
                         help='BSProc IDs of comparison stars to use. REQUIRED if --force_comp_stars used')
     parser.add_argument('--comp_tics', type=int, nargs='*', default=None,
                         help='TIC IDs of comparison stars to use. REQUIRED if --force_comp_stars used')
+    parser.add_argument('--ignore_bjd', type=float, nargs=2, default=[0.2, 0.21],
+                        help='BJD Timespan (fractional day) to ignore within data e.g. due to clouds')
     parser.add_argument('--ti', type=float, default=None,
                         help='Time of ingress. Used for normalisation. OPTIONAL.')
     parser.add_argument('--te', type=float, default=None,
@@ -53,6 +56,8 @@ def ParseArgs():
                         help='Comparison stars fainter than the target, with a Tmag difference greater than this are excluded. OPTIONAL. Default is 3.5mag')
     parser.add_argument('--dmag', type=float, default=0.5,
                         help='Node spacing for comparison star rejection spline. OPTIONAL. Default is 0.5mag.')
+    parser.add_argument('--exptime', type=float, default=10.,
+                        help='Exposure time of observations')
     return parser.parse_args()
 
 def custom_logger(logger_name, level=logging.DEBUG):
@@ -190,6 +195,7 @@ def find_bad_comp_stars(comp_fluxes, airmass, comp_mags0,
     return comp_star_mask, comp_star_rms, i
 
 if __name__ == "__main__":
+    now = datetime.now()
     args = ParseArgs()
  #   tic = args.tic
     name = args.name
@@ -235,6 +241,7 @@ if __name__ == "__main__":
             os.system('mkdir '+outdir+'ind_tel_lcs/')
             os.system('mkdir '+outdir+'data_files/')
             os.system('mkdir '+outdir+'logs/')
+        
      
     logger_main = custom_logger(outdir_main+'master_logs/'+name+'_bsproc_main.log')
  #   actions = args.actions
@@ -437,43 +444,67 @@ if __name__ == "__main__":
         except:
             psfs = pyfits.getdata(phot_file_root+'PSF.fits')
         
-        target_fluxes_full = np.copy(fluxes[0])
-        target_bjd = np.copy(bjds[0])
-        target_skys_full = np.copy(skybgs[0])
-        sep_centre_fwhm = np.copy(psfs[:, 1])
-        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)
-        rgw_fwhm = np.copy(psfs[:, -3])
+        target_bjd0 = np.copy(bjds[0])
+        bjd_int = int(target_bjd0[0])
+        ignore = args.ignore_bjd
+        ignore1, ignore2 = ignore[0]+bjd_int, ignore[1]+bjd_int
+        bjd_keep = (target_bjd0 <= ignore1) | (target_bjd0 >= ignore2)
+        target_bjd = np.copy(bjds[0])[bjd_keep]
+        ignore_run = (len(target_bjd) < len(target_bjd0))
+        target_fluxes_full = np.copy(fluxes[0])[bjd_keep]
+        target_skys_full = np.copy(skybgs[0])[bjd_keep]
+        sep_centre_fwhm = np.copy(psfs[:, 1])[bjd_keep]
+        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)[bjd_keep]
+        rgw_fwhm = np.copy(psfs[:, -3])[bjd_keep]
         
         try:
-            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')
+            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')[bjd_keep]
         except:
-            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')
-        scint_noise = estimate_scintillation_noise(airmass, 10.)
-        phot_csv_file = outdir+f'data_files/action{ac}_bsproc_dat.csv'
-        if os.path.exists(phot_csv_file):
-            logger.info('Phot CSV file already exists: '+phot_csv_file)
-            logger.info('Adding "new" data to existing file...')
-            df = pd.read_csv(phot_csv_file, index_col='NExposure')
-        else:
-            logger.info('No existing phot csv.')
+            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')[bjd_keep]
+        scint_noise = estimate_scintillation_noise(airmass, float(args.exptime))
+        #New logic here to account for Runs with the --ignore_bjd flag having a shorter data array
+        if ignore_run:
+            df_dir = f'IgnoreBJDRun_{now.year}_{now.month}_{now.day}T{now.hour}_{now.minute}_{now.second}/'
+            df_full_dir = outdir+'/data_files/'+df_dir
+            os.system('mkdir '+df_full_dir)
+            
+            phot_csv_file = df_full_dir+f'action{ac}_bsproc_dat.csv'
+            
+            logger.info('Ignore Run')
             logger.info('Creating new phot file: '+phot_csv_file)
             df = pd.DataFrame(np.column_stack((target_bjd, airmass,
                                                sep_centre_fwhm,
                                                tl_centre_fwhm,
                                                rgw_fwhm)),
-                          columns=['BJD','Airmass','FWHM_SEP',
-                                   'FWHM_TL','FWHM_RGW'])
+                              columns=['BJD','Airmass','FWHM_SEP',
+                                       'FWHM_TL','FWHM_RGW'])
+        else:
+            df_full_dir = outdir+'data_files/'
+            phot_csv_file = df_full_dir+f'action{ac}_bsproc_dat.csv'
+            if os.path.exists(phot_csv_file):
+                logger.info('Phot CSV file already exists: '+phot_csv_file)
+                logger.info('Adding "new" data to existing file...')
+                df = pd.read_csv(phot_csv_file, index_col='NExposure')
+            else:
+                logger.info('No existing phot csv.')
+                logger.info('Creating new phot file: '+phot_csv_file)
+                df = pd.DataFrame(np.column_stack((target_bjd, airmass,
+                                                   sep_centre_fwhm,
+                                                   tl_centre_fwhm,
+                                                   rgw_fwhm)),
+                              columns=['BJD','Airmass','FWHM_SEP',
+                                       'FWHM_TL','FWHM_RGW'])
         
-        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask])
-        comp_skys_full = np.copy(skybgs[idx==2][comp_mask])
-        comp_bjds = np.copy(bjds[idx==2][comp_mask])
+        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask][:, bjd_keep, :])
+        comp_skys_full = np.copy(skybgs[idx==2][comp_mask][:, bjd_keep, :])
+        comp_bjds = np.copy(bjds[idx==2][comp_mask][:, bjd_keep])
         comp_tics_full = np.copy(tic_ids[idx==2][comp_mask])
         comp_tmags_full = np.copy(tmags_comps[comp_mask])
         Ncomps_full = len(comp_mask)
         comp_inds_full = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[comp_mask]
         
-        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask])
-        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask])
+        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask][:, bjd_keep, :])
+        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask][:, bjd_keep])
         comp_tics_bad0 = np.copy(tic_ids[idx==2][~comp_mask])
         Ncomps_bad0 = len(comp_tics_bad0)
         comp_inds_bad0 = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[~comp_mask]
@@ -698,7 +729,7 @@ if __name__ == "__main__":
     ac_map = np.array([True if not ac in missing_actions else False for ac in actions])
     for ac, ns, rt, rc in zip(actions[ac_map], np.array(night_store)[ac_map], ac_apers_min_target, ac_apers_min_master):
         logger.info(f'Action {ac} - "Best" apers -  Target: {rt} pix; Comp: {rc} pix')
-        dat = pd.read_csv(outdir+f'data_files/action{ac}_bsproc_dat.csv',
+        dat = pd.read_csv(df_full_dir+f'action{ac}_bsproc_dat.csv',
                           index_col='NExposure')
         action_store = np.append(action_store, np.array([ac for i in range(len(dat))], dtype=int))
         bjd = np.append(bjd, np.array(dat.BJD))

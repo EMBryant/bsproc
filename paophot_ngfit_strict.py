@@ -68,23 +68,25 @@ def lnprior(theta, tc1, tc2):
         return -np.inf
     else:
         return 0.
-def lnlike(theta, params, model, sap, err, detrend, aids, actions):
+def lnlike(theta, params, model, sap, err, detrend, aids, actions, quad_dt=False):
     params.t0, params.rp = theta[0], theta[1]
     lc_bm = model.light_curve(params)
     lc_oot = np.array([])
     for ac, i in zip(aids, range(len(aids))):
         detrend_ac = detrend[actions==ac]
-        lc_oot = np.append(lc_oot, theta[2+2*i] + theta[3+2*i]*detrend_ac)
+        if quad_dt:
+            lc_oot = np.append(lc_oot, theta[2+3*i] + theta[3+3*i]*detrend_ac + theta[4+3*i]*detrend_ac**2)
+        else:
+            lc_oot = np.append(lc_oot, theta[2+2*i] + theta[3+2*i]*detrend_ac)
     lc_full = lc_oot * lc_bm
     ln_likelihood = -0.5 * (np.sum(((sap - lc_full)/err)**2 + np.log(2.0 * np.pi * err**2)))
     return ln_likelihood
     
-def lnprob(theta, params, model, sap, err, airmass, aids, actions, tc1, tc2):
+def lnprob(theta, params, model, sap, err, airmass, aids, actions, tc1, tc2, quad_dt=False):
     lp = lnprior(theta, tc1, tc2)
     if not np.isfinite(lp):
         return -np.inf
-    return lp + lnlike(theta, params, model, sap, err, airmass, aids, actions)
-
+    return lp + lnlike(theta, params, model, sap, err, airmass, aids, actions, quad_dt)
 
 ################################################################################
 ######    PLOTTING FUNCTIONS    ################################################
@@ -633,6 +635,83 @@ def plot_9cams(bjd, pdc, pdcerr,
     plt.show()
     return fig1, fig2
 
+def plot_10cams(bjd, pdc, pdcerr,
+               pdcmed, pdcerrmed,
+               model_best, model_median,
+               output):
+    tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
+    tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
+    offset = int(bjd[0])
+    s = bjd.argsort()
+    fig1 = plt.figure(figsize=(18, 12))
+    ax1 = fig1.add_subplot(411)
+    ax1.plot(bjd, pdc, 'k.', alpha=0.4, ms=2, zorder=1)
+    ax1.errorbar(tbin, fbin, yerr=ebin, fmt='bo', ms=5, zorder=5)
+    ax1.plot(bjd[s], model_best[s], 'r-', zorder=4)
+    ax1.set_xlabel(f'BJD - [{offset}]')
+    ax1.set_ylabel(f'NGTS Flux')
+    ax1.set_title(obj+'  NGTS  ngfit - Best')
+
+    ax2 = fig1.add_subplot(445)
+    ax3 = fig1.add_subplot(446)
+    ax4 = fig1.add_subplot(447)
+    ax5 = fig1.add_subplot(448)
+    ax6 = fig1.add_subplot(449)
+    ax7 = fig1.add_subplot(4,4,10)
+    ax8 = fig1.add_subplot(4,4,11)
+    ax9 = fig1.add_subplot(4,4,12)
+    ax10= fig1.add_subplot(4,4,14)
+    ax10= fig1.add_subplot(4,4,15)
+    axes = [ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10, ax11]
+    for ax, ac in zip(axes, aids):
+        idt = actions==ac
+        ti, fi, ei, dti, lci = bjd[idt], sap[idt], err[idt], lc_oot[idt], model_best[idt]
+        tbi, fbi, ebi = lb(ti, fi, ei, 5/1440.)
+        ax.plot(ti, fi, '.k', alpha=0.4, ms=2, zorder=1, label=str(ac))
+        ax.errorbar(tbi, fbi, yerr=ebi, fmt='bo', ms=5, zorder=5)
+        ax.plot(ti, lci*dti, 'C1-', zorder=3)
+        ax.legend(loc='upper left', frameon=False)
+
+    fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
+                         hspace=0.15, wspace=0.1)
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
+
+    fig2 = plt.figure(figsize=(18, 12))
+    ax1 = fig2.add_subplot(411)
+    ax1.plot(bjd, pdcmed, 'k.', alpha=0.4, ms=2, zorder=1)
+    ax1.errorbar(tbinm, fbinm, yerr=ebinm, fmt='bo', ms=5, zorder=5)
+    ax1.plot(bjd[s], model_med[s], 'r-', zorder=4)
+    ax1.set_xlabel(f'BJD - [{offset}]')
+    ax1.set_ylabel(f'NGTS Flux')
+    ax1.set_title(obj+'  NGTS  ngfit - Median')
+
+    ax2 = fig1.add_subplot(445)
+    ax3 = fig1.add_subplot(446)
+    ax4 = fig1.add_subplot(447)
+    ax5 = fig1.add_subplot(448)
+    ax6 = fig1.add_subplot(449)
+    ax7 = fig1.add_subplot(4,4,10)
+    ax8 = fig1.add_subplot(4,4,11)
+    ax9 = fig1.add_subplot(4,4,12)
+    ax10= fig1.add_subplot(4,4,14)
+    ax10= fig1.add_subplot(4,4,15)
+    axes = [ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10, ax11]
+    for ax, ac in zip(axes, aids):
+        idt = actions==ac
+        ti, fi, ei, dti, lci = bjd[idt], sap[idt], err[idt], lc_oot_med[idt], model_med[idt]
+        tbi, fbi, ebi = lb(ti, fi, ei, 5/1440.)
+        ax.plot(ti, fi, '.k', alpha=0.4, ms=2, zorder=1, label=str(ac))
+        ax.errorbar(tbi, fbi, yerr=ebi, fmt='bo', ms=5, zorder=5)
+        ax.plot(ti, lci*dti, 'C1-', zorder=3)
+        ax.legend(loc='upper left', frameon=False)
+
+    fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
+                         hspace=0.15, wspace=0.1)
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
+
+    plt.show()
+    return fig1, fig2
+
 if __name__ == "__main__":
     args = ParseArgs()
     lc = np.loadtxt(args.file_name)
@@ -644,8 +723,13 @@ if __name__ == "__main__":
     bjd, sap, err = np.copy(lc[keep, 1]), np.copy(lc[keep, 3]), np.copy(lc[keep, 4])
     if args.detrend == 'airmass':
         detrend = np.copy(lc[keep, 2])
+        quaddt = False
     elif args.detrend == 'time':
         detrend = np.copy(bjd) - np.int(bjd.min())
+        quaddt = False
+    elif args.detrend == 'quad':
+        detrend = np.copy(bjd) - np.int(bjd.min())
+        quaddt = True
     actions = np.copy(lc[keep, 0])
     aids = np.unique(actions)
     Nactions = len(aids)
@@ -695,11 +779,20 @@ if __name__ == "__main__":
         idac = actions==ac
         t, dt, f = bjd[idac], detrend[idac], sap[idac]
         idt = (t < tc1) | (t > tc2)
-        cs = np.polyfit(dt[idt], f[idt], 1)
-        theta.append(cs[1])
-        theta.append(cs[0])
-        labels.append(f'c0_{i}')
-        labels.append(f'c1_{i}')
+        if quaddt:
+            cs = np.polyfit(dt[idt], f[idt], 2)
+            theta.append(cs[2])
+            theta.append(cs[1])
+            theta.append(cs[0])
+            labels.append(f'c0_{i}')
+            labels.append(f'c1_{i}')
+            labels.append(f'c2_{i}')
+        else:
+            cs = np.polyfit(dt[idt], f[idt], 1)
+            theta.append(cs[1])
+            theta.append(cs[0])
+            labels.append(f'c0_{i}')
+            labels.append(f'c1_{i}')
         
     ndim = len(theta)
     nwalkers = 2*ndim + 4
@@ -707,7 +800,7 @@ if __name__ == "__main__":
                              for i in range(ndim)]))
     
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob,
-                                    args=(pm, m, sap, err, detrend, aids, actions, tc1, tc2))
+                                    args=(pm, m, sap, err, detrend, aids, actions, tc1, tc2, quaddt))
     
     print('Burn in... ')
     pos, prob, state = sampler.run_mcmc(pos0, 3000, progress=True)
@@ -738,11 +831,17 @@ if __name__ == "__main__":
     lc_oot_med = np.array([])
     for ac, i in zip(aids, range(len(aids))):
         fi, ei, dti = sap[actions==ac], err[actions==ac], detrend[actions==ac]
-        lcooti = params_best[2+2*i] + params_best[3+2*i] * dti
+        if quaddt:
+            lcooti = params_best[2+3*i] + params_best[3+3*i] * dti + params_best[4+3*i] * dti**2
+        else:
+            lcooti = params_best[2+2*i] + params_best[3+2*i] * dti
         lc_oot = np.append(lc_oot, lcooti)
         pdc = np.append(pdc, fi/lcooti)
         pdcerr = np.append(pdcerr, ei/lcooti)
-        lcootim = params_med[2+2*i] + params_med[3+2*i] * dti
+        if quaddt:
+            lcootim = params_med[2+3*i] + params_med[3+3*i] * dti + params_med[4 + 3*i] * dti**2
+        else:
+            lcootim = params_med[2+2*i] + params_med[3+2*i] * dti
         lc_oot_med = np.append(lc_oot_med, lcootim)
         pdcmed = np.append(pdcmed, fi/lcootim)
         pdcerrmed = np.append(pdcerrmed, ei/lcootim)
@@ -761,12 +860,12 @@ if __name__ == "__main__":
     
     
     vals_best = np.copy(params_best)
-    fig3 = corner.corner(samples, labels=labels, quantiles=[0.16, 0.5, 0.84], show_titles=True,
-                         title_fmt='.6f', kwargs={'fontsize':'12'},
-                         truths=vals_best, truth_color='C1')
-            
-    plt.savefig(opdir+obj+'_ngfit_strict_corner.png')
-    plt.close()
+ #   fig3 = corner.corner(samples, labels=labels, quantiles=[0.16, 0.5, 0.84], show_titles=True,
+ #                        title_fmt='.6f', kwargs={'fontsize':'12'},
+ #                        truths=vals_best, truth_color='C1')
+ #           
+ #   plt.savefig(opdir+obj+'_ngfit_strict_corner.png')
+ #   plt.close()
     
     if abs(Nactions - 2) <= 0.1:
         fig1, fig2 = plot_2cams(bjd, pdc, pdcerr,
@@ -805,6 +904,11 @@ if __name__ == "__main__":
                                 opdir)
     elif abs(Nactions - 9) <= 0.1:
         fig1, fig2 = plot_9cams(bjd, pdc, pdcerr,
+                                pdcmed, pdcerrmed,
+                                model_best, model_med,
+                                opdir)
+    elif abs(Nactions - 10) <= 0.1:
+        fig1, fig2 = plot_10cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
                                 model_best, model_med,
                                 opdir)
