@@ -417,7 +417,7 @@ if __name__ == "__main__":
         logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
         print(' ')
-        if not os.path.exists(root_dir+f'photometry/action{ac}/ACITON_{ac}_BJD.fits.bz2'):
+        if not os.path.exists(root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_BJD.fits.bz2'):
             logger.info(f'Can\'t find photometry for Action {ac}')
             logger_main.info(f'No photometry for Action {ac}')
             logger_main.info(f'Skipping Action {ac}.')
@@ -426,7 +426,7 @@ if __name__ == "__main__":
         logger.info('Night '+ns+f': Running for Action{ac}...')
 #        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
         
-        phot_file_root = root_dir+f'photometry/action{ac}/ACITON_{ac}_'
+        phot_file_root = root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_'
         try:
             bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
         except:
