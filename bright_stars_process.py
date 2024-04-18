@@ -160,7 +160,11 @@ def find_comp_star_rms(comp_fluxes, airmass, comp_mags0):
         airmass_mod = np.polyval(airmass_cs, airmass)
         comp_flux_corrected = comp_flux / airmass_mod
         comp_flux_norm = comp_flux_corrected / np.median(comp_flux_corrected)
-        comp_star_rms = np.append(comp_star_rms, np.std(comp_flux_norm))
+        comp_star_rms_val = np.std(comp_flux_norm)
+        if np.isfinite(comp_star_rms_val):
+            comp_star_rms = np.append(comp_star_rms, comp_star_rms_val)
+        else:
+            comp_star_rms = np.append(comp_star_rms, 99.)
     return comp_star_rms
 
 def find_bad_comp_stars(comp_fluxes, airmass, comp_mags0,
