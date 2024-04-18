@@ -370,7 +370,7 @@ if __name__ == "__main__":
         tic = 366443426
         logger_main.info(f'Object is TIC-{tic}')
 
-    target_cat_fits_path = root_dir+f'FAILtarget_catalogues/TIC-{tic}.fits'
+    target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
     if os.path.exists(target_cat_fits_path):
         star_cat  = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
         star_mask0= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
