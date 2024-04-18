@@ -374,8 +374,11 @@ if __name__ == "__main__":
         tic = 366443426
         logger_main.info(f'Object is TIC-{tic}')
 
-    target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
-    if os.path.exists(target_cat_fits_path):
+    tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
+    if tic_ids is None:
+        target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
+        if not os.path.exists(target_cat_fits_path):
+            raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
         star_cat  = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
         star_mask0= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
         star_mask = np.array([int(m[0]) for m in star_mask0], dtype=int)
@@ -385,12 +388,27 @@ if __name__ == "__main__":
         tmag_target = tmags_full[0]
         tmags_comps = tmags_full[idx==2]
     else:
-        tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
-        if tic_ids is None:
-            raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
         tmag_target = tmags_full[0]
         tmags_comps = tmags_full[idx==2]
         star_mask = 1 - star_mask0[idx==2]
+        target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
+
+ #   if os.path.exists(target_cat_fits_path):
+ #       star_cat  = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
+ #       star_mask0= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
+ #       star_mask = np.array([int(m[0]) for m in star_mask0], dtype=int)
+ #       tic_ids = np.array(star_cat.tic_id)
+ #       idx = np.array(star_cat.PAOPHOT_IDX)
+ #       tmags_full = np.array(star_cat.Tmag)
+ #       tmag_target = tmags_full[0]
+ #       tmags_comps = tmags_full[idx==2]
+ #   else:
+ #       tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
+ #       if tic_ids is None:
+ #           raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
+ #       tmag_target = tmags_full[0]
+ #       tmags_comps = tmags_full[idx==2]
+ #       star_mask = 1 - star_mask0[idx==2]
     
     if args.force_comp_stars:
         logger_main.info(f'Nights {nights}: Using user defined comparison stars.')
