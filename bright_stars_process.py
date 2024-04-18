@@ -372,19 +372,21 @@ if __name__ == "__main__":
 
     target_cat_fits_path = root_dir+f'FAILtarget_catalogues/TIC-{tic}.fits'
     if os.path.exists(target_cat_fits_path):
-        star_cat = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
-        star_mask= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
+        star_cat  = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
+        star_mask0= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
+        star_mask = np.array([int(m[0]) for m in star_mask0], dtype=int)
         tic_ids = np.array(star_cat.tic_id)
         idx = np.array(star_cat.PAOPHOT_IDX)
         tmags_full = np.array(star_cat.Tmag)
         tmag_target = tmags_full[0]
         tmags_comps = tmags_full[idx==2]
     else:
-        tic_ids, idx, star_mask, tmags_full = get_target_catalogue_from_database(tic)
+        tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
         if tic_ids is None:
             raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
         tmag_target = tmags_full[0]
         tmags_comps = tmags_full[idx==2]
+        star_mask = 1 - star_mask0[idx==2]
     
     if args.force_comp_stars:
         logger_main.info(f'Nights {nights}: Using user defined comparison stars.')
@@ -402,7 +404,7 @@ if __name__ == "__main__":
             raise ValueError('If user defined comp stars (--force_comp_stars) I need comparison star IDs (--comp_inds) or TIC IDs (--comp_tics).')        
     
     else:
-        comp_mask= np.array([m[0] for m in star_mask])
+        comp_mask= np.array([bool(m) for m in star_mask])
         logger_main.info(f'Nights {nights}: User rejected comp stars (tics): {args.bad_comp_tics}')
         logger_main.info(f'Nights {nights}: User rejected comp stars (inds): {args.bad_comp_inds}')
         if args.bad_comp_tics is not None:
