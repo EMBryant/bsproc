@@ -194,6 +194,24 @@ def find_bad_comp_stars(comp_fluxes, airmass, comp_mags0,
             break
     return comp_star_mask, comp_star_rms, i
 
+def get_target_catalogue_from_database(tic_id):
+    qry = 'SELECT target_tic_id FROM ngts_wcs.ngts_target_photometry_catalogue WHERE target_tic_id={:};'.format(tic_id)
+    connection = pymysql.connect(host='ngtsdb', user='pipe')
+    with connection.cursor() as cur:
+        cur.execute(qry)
+    output = cur.fetchall()
+    if len(output)==0 : return None, None, None, None
+
+    qry = 'SELECT a.tic_id, a.obj_type, a.mask, b.Tmag, a.metric FROM ngts_wcs.ngts_target_photometry_catalogue a LEFT JOIN catalogues.tic8 b ON a.tic_id=b.tic_id WHERE a.target_tic_id={:} ORDER BY a.obj_type,a.metric;'.format(tic_id)
+    with connection.cursor() as cur:
+        cur.execute(qry)
+    output = cur.fetchall()
+    tic_ids = np.array([i[0] for i in output])
+    idx     = np.array([i[1] for i in output])
+    mask    = np.array([i[2] for i in output])
+    tmags   = np.array([i[3] for i in output])
+    return tic_ids, idx, mask, tmags
+
 if __name__ == "__main__":
     now = datetime.now()
     args = ParseArgs()
@@ -351,14 +369,22 @@ if __name__ == "__main__":
     elif name == 'HIP-41378':
         tic = 366443426
         logger_main.info(f'Object is TIC-{tic}')
-                
-    star_cat = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
-    star_mask= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
-    tic_ids = np.array(star_cat.tic_id)
-    idx = np.array(star_cat.PAOPHOT_IDX)
-    tmags_full = np.array(star_cat.Tmag)
-    tmag_target = tmags_full[0]
-    tmags_comps = tmags_full[idx==2]
+
+    target_cat_fits_path = root_dir+f'FAILtarget_catalogues/TIC-{tic}.fits'
+    if os.path.exists(target_cat_fits_path):
+        star_cat = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
+        star_mask= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
+        tic_ids = np.array(star_cat.tic_id)
+        idx = np.array(star_cat.PAOPHOT_IDX)
+        tmags_full = np.array(star_cat.Tmag)
+        tmag_target = tmags_full[0]
+        tmags_comps = tmags_full[idx==2]
+    else:
+        tic_ids, idx, star_mask, tmags_full = get_target_catalogue_from_database(tic)
+        if tic_ids is None:
+            raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
+        tmag_target = tmags_full[0]
+        tmags_comps = tmags_full[idx==2]
     
     if args.force_comp_stars:
         logger_main.info(f'Nights {nights}: Using user defined comparison stars.')
