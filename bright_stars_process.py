@@ -467,16 +467,27 @@ if __name__ == "__main__":
         logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
         print(' ')
-        if not os.path.exists(root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_BJD.fits.bz2'):
+        phot_file_dir = root_dir + f'photometry/action{ac}/'
+        #if not os.path.exists(root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_BJD.fits.bz2'):
+        if os.path.exists(phot_file_dir):
+            logger.info(f'Found photometry directory')
+            phot_file_root = phot_file_dir + f'TIC-{tic}_ACITON_{ac}_'
+        else:
             logger.info(f'Can\'t find photometry for Action {ac}')
-            logger_main.info(f'No photometry for Action {ac}')
-            logger_main.info(f'Skipping Action {ac}.')
-            missing_actions = np.append(missing_actions, ac)
-            continue
+            logger.info('Trying "old" directory')
+            phot_file_dir = root_dir + f'old/photometry_old/action{ac}/'
+            if os.path.exists(phot_file_dir):
+                logger.info('Found "old" photometry directory')
+                phot_file_root = phot_file_dir + f'ACITON_{ac}_'
+            else:
+                logger_main.info(f'No photometry for Action {ac}')
+                logger_main.info(f'Skipping Action {ac}.')
+                missing_actions = np.append(missing_actions, ac)
+                continue
         logger.info('Night '+ns+f': Running for Action{ac}...')
 #        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
         
-        phot_file_root = root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_'
+      #  phot_file_root = root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_'
         try:
             bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
         except:
