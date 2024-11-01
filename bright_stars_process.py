@@ -802,8 +802,7 @@ if __name__ == "__main__":
     for ac, ns, fn, rt, rc in zip(actions[ac_map], np.array(night_store)[ac_map],
                                   output_file_names, ac_apers_min_target, ac_apers_min_master):
         logger.info(f'Action {ac} - "Best" apers -  Target: {rt} pix; Comp: {rc} pix')
-        dat = pd.read_csv(df_full_dir+f'action{ac}_bsproc_dat.csv',
-                          index_col='NExposure')
+        dat = pd.read_csv(fn, index_col='NExposure')
         action_store = np.append(action_store, np.array([ac for i in range(len(dat))], dtype=int))
         bjd = np.append(bjd, np.array(dat.BJD))
         airmass_store = np.append(airmass_store, np.array(dat.Airmass))
