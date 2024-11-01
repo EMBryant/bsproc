@@ -463,6 +463,7 @@ if __name__ == "__main__":
     ac_apers_min_target = np.array([])
     ac_apers_min_master = np.array([])
     missing_actions = np.array([])
+    output_file_names = []
     for ac, ns in zip(actions, night_store):
         logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
@@ -519,6 +520,7 @@ if __name__ == "__main__":
         if np.sum(airmass_keep) <= 0.2 * len(airmass_0):
             logger.info('Fewer than 20% of the airmass array is above 1.')
             logger.info('Skipping action.')
+            missing_actions = np.append(missing_actions, ac)
             continue
         keep = bjd_keep & airmass_keep
         target_bjd = np.copy(bjds[0])[keep]
@@ -787,6 +789,7 @@ if __name__ == "__main__":
         
         ac_apers_min_target = np.append(ac_apers_min_target, np.array(r_ap)[ap_target_rms.argmin()])
         ac_apers_min_master = np.append(ac_apers_min_master, np.array(r_ap)[ap_comp_rms.argmin()])
+        output_file_names.append(phot_csv_file)
     
     action_store = np.array([], dtype=int)
     airmass_store = np.array([])
@@ -796,7 +799,8 @@ if __name__ == "__main__":
     flux0_t, err0_t, skybg_t = np.array([]), np.array([]), np.array([])
     flux0_mc, err0_mc, skybg_mc = np.array([]), np.array([]), np.array([])
     ac_map = np.array([True if not ac in missing_actions else False for ac in actions])
-    for ac, ns, rt, rc in zip(actions[ac_map], np.array(night_store)[ac_map], ac_apers_min_target, ac_apers_min_master):
+    for ac, ns, fn, rt, rc in zip(actions[ac_map], np.array(night_store)[ac_map],
+                                  output_file_names, ac_apers_min_target, ac_apers_min_master):
         logger.info(f'Action {ac} - "Best" apers -  Target: {rt} pix; Comp: {rc} pix')
         dat = pd.read_csv(df_full_dir+f'action{ac}_bsproc_dat.csv',
                           index_col='NExposure')
