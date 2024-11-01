@@ -505,23 +505,31 @@ if __name__ == "__main__":
         except:
             psfs = pyfits.getdata(phot_file_root+'PSF.fits')
         
+        try:
+            airmass_0 = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')
+        except:
+            airmass_0 = pyfits.getdata(phot_file_root+'AIRMASS.fits')
+
         target_bjd0 = np.copy(bjds[0])
         bjd_int = int(target_bjd0[0])
         ignore = args.ignore_bjd
         ignore1, ignore2 = ignore[0]+bjd_int, ignore[1]+bjd_int
         bjd_keep = (target_bjd0 <= ignore1) | (target_bjd0 >= ignore2)
-        target_bjd = np.copy(bjds[0])[bjd_keep]
+        airmass_keep = airmass_0 > 0.99
+        if np.sum(airmass_keep) <= 0.2 * len(airmass_0):
+            logger.info('Fewer than 20% of the airmass array is above 1.')
+            logger.info('Skipping action.')
+            continue
+        keep = bjd_keep & airmass_keep
+        target_bjd = np.copy(bjds[0])[keep]
         ignore_run = (len(target_bjd) < len(target_bjd0))
-        target_fluxes_full = np.copy(fluxes[0])[bjd_keep]
-        target_skys_full = np.copy(skybgs[0])[bjd_keep]
-        sep_centre_fwhm = np.copy(psfs[:, 1])[bjd_keep]
-        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)[bjd_keep]
-        rgw_fwhm = np.copy(psfs[:, -3])[bjd_keep]
+        target_fluxes_full = np.copy(fluxes[0])[keep]
+        target_skys_full = np.copy(skybgs[0])[keep]
+        sep_centre_fwhm = np.copy(psfs[:, 1])[keep]
+        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)[keep]
+        rgw_fwhm = np.copy(psfs[:, -3])[keep]
+        airmass = np.copy(airmass_0)[keep]
         
-        try:
-            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')[bjd_keep]
-        except:
-            airmass = pyfits.getdata(phot_file_root+'AIRMASS.fits')[bjd_keep]
         scint_noise = estimate_scintillation_noise(airmass, float(args.exptime))
         #New logic here to account for Runs with the --ignore_bjd flag having a shorter data array
         if ignore_run:
@@ -556,16 +564,16 @@ if __name__ == "__main__":
                               columns=['BJD','Airmass','FWHM_SEP',
                                        'FWHM_TL','FWHM_RGW'])
         
-        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask][:, bjd_keep, :])
-        comp_skys_full = np.copy(skybgs[idx==2][comp_mask][:, bjd_keep, :])
-        comp_bjds = np.copy(bjds[idx==2][comp_mask][:, bjd_keep])
+        comp_fluxes_full = np.copy(fluxes[idx==2][comp_mask][:, keep, :])
+        comp_skys_full = np.copy(skybgs[idx==2][comp_mask][:, keep, :])
+        comp_bjds = np.copy(bjds[idx==2][comp_mask][:, keep])
         comp_tics_full = np.copy(tic_ids[idx==2][comp_mask])
         comp_tmags_full = np.copy(tmags_comps[comp_mask])
         Ncomps_full = len(comp_mask)
         comp_inds_full = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[comp_mask]
         
-        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask][:, bjd_keep, :])
-        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask][:, bjd_keep])
+        comp_fluxes_bad0 = np.copy(fluxes[idx==2][~comp_mask][:, keep, :])
+        comp_bjds_bad0 = np.copy(bjds[idx==2][~comp_mask][:, keep])
         comp_tics_bad0 = np.copy(tic_ids[idx==2][~comp_mask])
         Ncomps_bad0 = len(comp_tics_bad0)
         comp_inds_bad0 = np.linspace(0, Ncomps_full-1, Ncomps_full, dtype=int)[~comp_mask]
