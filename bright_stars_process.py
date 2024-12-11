@@ -276,8 +276,16 @@ if __name__ == "__main__":
     elif name[:3] == 'TIC':
         ticid = str(name.split('-')[-1])
         camp_id = 'TIC-'+ticid
+### If you have a non TIC or TOI campaign name add some code here: ####
+### This will allow bsproc to find the correct actions
+### Code should be of the format:
+### elif name == <Name of your object>:  (use this name on the command line)
+###     camp_id = <Campign name prefix for your object>
+### See examples for HIP-41378 and WASP-47
     elif name == 'HIP-41378':
         camp_id = 'HIP41378'
+    elif name == 'WASP-47' or name == 'WASP47':
+        camp_id = 'WASP47'
     for night in nights:     
         connection = pymysql.connect(host='ngtsdb', db='ngts_ops', user='pipe')
         if args.camera is None:
@@ -370,8 +378,18 @@ if __name__ == "__main__":
             else:
                 tic = int(res[0])
         logger_main.info(f'Object is TIC-{tic}')
+### If you have a non TIC or TOI campaign name add some code here: ####
+### This will allow you to manually provide bsproc with the correct TIC ID
+### Code should be of the format:
+### elif name == <Name of your object>:  (use this name on the command line)
+###     tic = <TIC ID of your object>
+###     logger_main.info(f'Object is TIC-{tic}')
+### See examples for HIP-41378 and WASP-47
     elif name == 'HIP-41378':
         tic = 366443426
+        logger_main.info(f'Object is TIC-{tic}')
+    elif name == 'WASP47' or name == 'WASP-47':
+        tic = 102264230
         logger_main.info(f'Object is TIC-{tic}')
 
     tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
