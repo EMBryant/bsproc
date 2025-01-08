@@ -504,7 +504,15 @@ if __name__ == "__main__":
                 missing_actions = np.append(missing_actions, ac)
                 continue
         logger.info('Night '+ns+f': Running for Action{ac}...')
-#        os.system('cp '+root_dir+f'action_summaries/{ac}_TIC-{tic}.png '+objdir+'action_summaries/')
+        ac_sum_dir = root_dir + f'visiual/TIC-{tic}/action_summaries/'
+        ac_sum_file = ac_sum_dir + f'{ac}_TIC-{tic}.png'
+        if os.path.exists(ac_sum_file):
+            logger.info('Found action summary file :  '+ac_sum_file)
+            logger.info('Copying file to bsproc outputs directory')
+            os.system('cp '+ac_sum_file+' '+objdir+'action_summaries/')
+        else:
+            logger.info('Could not find action summary file :   '+ac_sum_file)
+            logger.info('Skipping')
         
       #  phot_file_root = root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_'
         try:
