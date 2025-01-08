@@ -504,7 +504,7 @@ if __name__ == "__main__":
                 missing_actions = np.append(missing_actions, ac)
                 continue
         logger.info('Night '+ns+f': Running for Action{ac}...')
-        ac_sum_dir = root_dir + f'visiual/TIC-{tic}/action_summaries/'
+        ac_sum_dir = root_dir + f'visual/TIC-{tic}/action_summaries/'
         ac_sum_file = ac_sum_dir + f'{ac}_TIC-{tic}.png'
         if os.path.exists(ac_sum_file):
             logger.info('Found action summary file :  '+ac_sum_file)
