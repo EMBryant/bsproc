@@ -391,81 +391,25 @@ if __name__ == "__main__":
     elif name == 'WASP47' or name == 'WASP-47':
         tic = 102264230
         logger_main.info(f'Object is TIC-{tic}')
-
-    tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
-    if tic_ids is None:
-        target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
-        if not os.path.exists(target_cat_fits_path):
-            raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
-        star_cat  = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
-        star_mask0= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
-        star_mask = np.array([int(m[0]) for m in star_mask0], dtype=int)
-        tic_ids = np.array(star_cat.tic_id)
-        idx = np.array(star_cat.PAOPHOT_IDX)
-        tmags_full = np.array(star_cat.Tmag)
-        tmag_target = tmags_full[0]
-        tmags_comps = tmags_full[idx==2]
-    else:
-        tmag_target = tmags_full[0]
-        tmags_comps = tmags_full[idx==2]
-        star_mask = 1 - star_mask0[idx==2]
-        target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
-
- #   if os.path.exists(target_cat_fits_path):
- #       star_cat  = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
- #       star_mask0= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
- #       star_mask = np.array([int(m[0]) for m in star_mask0], dtype=int)
- #       tic_ids = np.array(star_cat.tic_id)
- #       idx = np.array(star_cat.PAOPHOT_IDX)
- #       tmags_full = np.array(star_cat.Tmag)
- #       tmag_target = tmags_full[0]
- #       tmags_comps = tmags_full[idx==2]
- #   else:
- #       tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
- #       if tic_ids is None:
- #           raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
- #       tmag_target = tmags_full[0]
- #       tmags_comps = tmags_full[idx==2]
- #       star_mask = 1 - star_mask0[idx==2]
-    
-    if args.force_comp_stars:
-        logger_main.info(f'Nights {nights}: Using user defined comparison stars.')
-        if args.comp_inds is not None:
-            comp_mask = np.array([True if i in args.comp_inds else False 
-                                  for i in range(100)])
-            logger_main.info(f'Nights {nights}: Using {np.sum(comp_mask)} user defined comparison stars.')
-            logger_main.info(f'Nights {nights}: Using these comparison stars (inds): {args.comp_inds}')
-        elif args.comp_tics is not None:
-            comp_mask = np.array([True if t in args.comp_tics else False 
-                                  for t in tic_ids[idx==2]])
-            logger_main.info(f'Nights {nights}: Using {np.sum(comp_mask)} user defined comparison stars.')
-            logger_main.info(f'Nights {nights}: Using these comparison stars (tics): {args.comp_tics}')
-        else:
-            raise ValueError('If user defined comp stars (--force_comp_stars) I need comparison star IDs (--comp_inds) or TIC IDs (--comp_tics).')        
-    
-    else:
-        comp_mask= np.array([bool(m) for m in star_mask])
-        logger_main.info(f'Nights {nights}: User rejected comp stars (tics): {args.bad_comp_tics}')
-        logger_main.info(f'Nights {nights}: User rejected comp stars (inds): {args.bad_comp_inds}')
-        if args.bad_comp_tics is not None:
-            comp_mask_2 = [False if t in args.bad_comp_tics else True
-                           for t in tic_ids[idx==2]]
-            comp_mask &= comp_mask_2
-        elif args.bad_comp_inds is not None:
-            comp_mask_2 = [False if i in args.bad_comp_inds else True
-                           for i in range(100)]
-            comp_mask &= comp_mask_2
-        logger_main.info(f'Nights {nights}: Checking comp star brightness')
-        bad_mag_inds = []
-        bad_mag_tics = []
-        for i, tici in zip(range(len(tmags_comps)), tic_ids[idx==2]):
-            tmag = tmags_comps[i]
-            if tmag < tmag_target-args.dmb or tmag > tmag_target + args.dmf:
-                comp_mask[i] = False
-                bad_mag_inds.append(i)
-                bad_mag_tics.append(tici)
-        logger_main.info(f'Nights {nights}: Comps rejected by brightness (inds): {bad_mag_inds}')
-        logger_main.info(f'Nights {nights}: Comps rejected by brightness (tics): {bad_mag_tics}')
+### OLD TARGET CATALOGUE QUERY ###
+    #tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
+    #if tic_ids is None:
+    #    target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
+    #    if not os.path.exists(target_cat_fits_path):
+    #        raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
+    #    star_cat  = pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}.fits')
+    #    star_mask0= pyfits.getdata(root_dir+f'target_catalogues/TIC-{tic}_mask.fits')
+    #    star_mask = np.array([int(m[0]) for m in star_mask0], dtype=int)
+    #    tic_ids = np.array(star_cat.tic_id)
+    #    idx = np.array(star_cat.PAOPHOT_IDX)
+    #    tmags_full = np.array(star_cat.Tmag)
+    #    tmag_target = tmags_full[0]
+    #    tmags_comps = tmags_full[idx==2]
+    #else:
+    #    tmag_target = tmags_full[0]
+    #    tmags_comps = tmags_full[idx==2]
+    #    star_mask = 1 - star_mask0[idx==2]
+    #    target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
     
     r_ap = args.aper
     if r_ap is None:
@@ -486,35 +430,93 @@ if __name__ == "__main__":
         logger = custom_logger(outdir+'logs/'+name+'_night'+ns+f'_action{ac}.log')
         print(' ')
         print(' ')
-        phot_file_dir = root_dir + f'photometry/action{ac}/'
+        logger.info(f'Querying target catalogue for action {ac}...')
+        phot_file_dir = root_dir + f'bs_photometry/action{ac}/'
+        target_cat_fits_path = phot_file_dir + f'ACTION_{ac}_PHOTOMETRY_CATALOGUE.fits'
+        if os.path.exists(target_cat_fits_path):
+            star_cat  = pyfits.getdata(target_cat_fits_path)
+            star_mask0= pyfits.getdata(target_cat_fits_path)
+            star_mask = np.array([int(1 - m[0]) for m in star_mask0], dtype=int)
+            tic_ids = np.array(star_cat.tic_id)
+            idx = np.array(star_cat.phot_type)
+            tmags_full = np.array(star_cat.Tmag)
+            tmag_target = tmags_full[0]
+            tmags_comps = tmags_full[idx==2]
+        else:
+            tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(tic)
+            if tic_ids is None:
+                raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(tic))
+            tmag_target = tmags_full[0]
+            tmags_comps = tmags_full[idx==2]
+            star_mask = 1 - star_mask0[idx==2]
+        
+        if args.force_comp_stars:
+            logger.info(f'Nights {nights}  Action {ac}: Using user defined comparison stars.')
+            if args.comp_inds is not None:
+                comp_mask = np.array([True if i in args.comp_inds else False 
+                                      for i in range(100)])
+                logger.info(f'Nights {nights}  Action {ac}: Using {np.sum(comp_mask)} user defined comparison stars.')
+                logger.info(f'Nights {nights}  Action {ac}: Using these comparison stars (inds): {args.comp_inds}')
+            elif args.comp_tics is not None:
+                comp_mask = np.array([True if t in args.comp_tics else False 
+                                      for t in tic_ids[idx==2]])
+                logger.info(f'Nights {nights}  Action {ac}: Using {np.sum(comp_mask)} user defined comparison stars.')
+                logger.info(f'Nights {nights}  Action {ac}: Using these comparison stars (tics): {args.comp_tics}')
+            else:
+                raise ValueError('If user defined comp stars (--force_comp_stars) I need comparison star IDs (--comp_inds) or TIC IDs (--comp_tics).')        
+        
+        else:
+            comp_mask= np.array([bool(m) for m in star_mask])
+            logger.info(f'Nights {nights}  Action {ac}: User rejected comp stars (tics): {args.bad_comp_tics}')
+            logger.info(f'Nights {nights}  Action {ac}: User rejected comp stars (inds): {args.bad_comp_inds}')
+            if args.bad_comp_tics is not None:
+                comp_mask_2 = [False if t in args.bad_comp_tics else True
+                               for t in tic_ids[idx==2]]
+                comp_mask &= comp_mask_2
+            elif args.bad_comp_inds is not None:
+                comp_mask_2 = [False if i in args.bad_comp_inds else True
+                               for i in range(100)]
+                comp_mask &= comp_mask_2
+            logger.info(f'Nights {nights}  Action {ac}: Checking comp star brightness')
+            bad_mag_inds = []
+            bad_mag_tics = []
+            for i, tici in zip(range(len(tmags_comps)), tic_ids[idx==2]):
+                tmag = tmags_comps[i]
+                if tmag < tmag_target-args.dmb or tmag > tmag_target + args.dmf:
+                    comp_mask[i] = False
+                    bad_mag_inds.append(i)
+                    bad_mag_tics.append(tici)
+            logger.info(f'Nights {nights}  Action {ac}: Comps rejected by brightness (inds): {bad_mag_inds}')
+            logger.info(f'Nights {nights}  Action {ac}: Comps rejected by brightness (tics): {bad_mag_tics}')
+            
         #if not os.path.exists(root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_BJD.fits.bz2'):
         if os.path.exists(phot_file_dir):
             logger.info(f'Found photometry directory')
-            phot_file_root = phot_file_dir + f'TIC-{tic}_ACITON_{ac}_'
+            phot_file_root = phot_file_dir + f'ACTION_{ac}_'
         else:
             logger.info(f'Can\'t find photometry for Action {ac}')
             logger.info('Trying "old" directory')
             phot_file_dir = root_dir + f'old/photometry_old/action{ac}/'
             if os.path.exists(phot_file_dir):
                 logger.info('Found "old" photometry directory')
-                phot_file_root = phot_file_dir + f'ACITON_{ac}_'
+                phot_file_root = phot_file_dir + f'ACTION_{ac}_'
             else:
                 logger_main.info(f'No photometry for Action {ac}')
                 logger_main.info(f'Skipping Action {ac}.')
                 missing_actions = np.append(missing_actions, ac)
                 continue
-        logger.info('Night '+ns+f': Running for Action{ac}...')
-        ac_sum_dir = root_dir + f'visual/TIC-{tic}/action_summaries/'
-        ac_sum_file = ac_sum_dir + f'{ac}_TIC-{tic}.png'
-        if os.path.exists(ac_sum_file):
-            logger.info('Found action summary file :  '+ac_sum_file)
-            logger.info('Copying file to bsproc outputs directory')
-            os.system('cp '+ac_sum_file+' '+objdir+'action_summaries/')
-        else:
-            logger.info('Could not find action summary file :   '+ac_sum_file)
-            logger.info('Skipping')
+   #     logger.info('Night '+ns+f': Running for Action{ac}...')
+   #     ac_sum_dir = root_dir + f'visual/TIC-{tic}/action_summaries/'
+   #     ac_sum_file = ac_sum_dir + f'{ac}_TIC-{tic}.png'
+   #     if os.path.exists(ac_sum_file):
+   #         logger.info('Found action summary file :  '+ac_sum_file)
+   #         logger.info('Copying file to bsproc outputs directory')
+   #         os.system('cp '+ac_sum_file+' '+objdir+'action_summaries/')
+   #     else:
+   #         logger.info('Could not find action summary file :   '+ac_sum_file)
+   #         logger.info('Skipping')
         
-      #  phot_file_root = root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_'
+   #   #  phot_file_root = root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_'
         try:
             bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
         except:
@@ -532,10 +534,10 @@ if __name__ == "__main__":
         except:
             psfs = pyfits.getdata(phot_file_root+'PSF.fits')
         
-        try:
-            airmass_0 = pyfits.getdata(phot_file_root+'AIRMASS.fits.bz2')
-        except:
-            airmass_0 = pyfits.getdata(phot_file_root+'AIRMASS.fits')
+        #try:
+        #    airmass_0 = pyfits.getdata(phot_file_root+'IMAGELIST.fits.bz2')
+        airmass_hdu_0 = pyfits.open(phot_file_root+'IMAGELIST.fits')
+        airmass_0 = np.array(airmass_hdu_0[1].data
 
         target_bjd0 = np.copy(bjds[0])
         bjd_int = int(target_bjd0[0])
