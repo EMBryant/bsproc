@@ -411,15 +411,15 @@ if __name__ == "__main__":
     #    star_mask = 1 - star_mask0[idx==2]
     #    target_cat_fits_path = root_dir+f'target_catalogues/TIC-{tic}.fits'
     
-    r_ap = args.aper
-    if r_ap is None:
-        if tmag_target >= 10.:
-            r_ap = [2.0, 2.5, 3.0, 3.5, 4.0]
-        elif 9.0 <= tmag_target < 10.0:
-            r_ap = [3.0, 3.5, 4.0, 4.5, 5.0]
-        elif tmag_target < 9.0:
-            r_ap = [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0]
-    ap_ids = [int(2*r - 4) for r in r_ap]
+    #r_ap = args.aper
+    #if r_ap is None:
+    #    if tmag_target >= 10.:
+    #        r_ap = [2.0, 2.5, 3.0, 3.5, 4.0]
+    #    elif 9.0 <= tmag_target < 10.0:
+    #        r_ap = [3.0, 3.5, 4.0, 4.5, 5.0]
+    #    elif tmag_target < 9.0:
+    #        r_ap = [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0]
+    #ap_ids = [int(2*r - 4) for r in r_ap]
 
 
     ac_apers_min_target = np.array([])
@@ -435,10 +435,10 @@ if __name__ == "__main__":
         target_cat_fits_path = phot_file_dir + f'ACTION_{ac}_PHOTOMETRY_CATALOGUE.fits'
         if os.path.exists(target_cat_fits_path):
             star_cat  = pyfits.getdata(target_cat_fits_path)
-            star_mask0= pyfits.getdata(target_cat_fits_path)
-            star_mask = np.array([int(1 - m[0]) for m in star_mask0], dtype=int)
+        #    star_mask = np.array([int(1 - m[0]) for m in star_mask0], dtype=int)
             tic_ids = np.array(star_cat.tic_id)
             idx = np.array(star_cat.phot_type)
+            star_mask = 1 - np.array(star_cat.mask, dtype=int)[idx==2]
             tmags_full = np.array(star_cat.Tmag)
             tmag_target = tmags_full[0]
             tmags_comps = tmags_full[idx==2]
@@ -449,6 +449,16 @@ if __name__ == "__main__":
             tmag_target = tmags_full[0]
             tmags_comps = tmags_full[idx==2]
             star_mask = 1 - star_mask0[idx==2]
+
+        r_ap = args.aper
+        if r_ap is None:
+            if tmag_target >= 10.:
+                r_ap = [2.0, 2.5, 3.0, 3.5, 4.0]
+            elif 9.0 <= tmag_target < 10.0:
+                r_ap = [3.0, 3.5, 4.0, 4.5, 5.0]
+            elif tmag_target < 9.0:
+                r_ap = [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0]
+        ap_ids = [int(2*r - 4) for r in r_ap]
         
         if args.force_comp_stars:
             logger.info(f'Nights {nights}  Action {ac}: Using user defined comparison stars.')
@@ -517,10 +527,10 @@ if __name__ == "__main__":
    #         logger.info('Skipping')
         
    #   #  phot_file_root = root_dir+f'photometry/action{ac}/TIC-{tic}_ACITON_{ac}_'
-        try:
-            bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
-        except:
-            bjds = pyfits.getdata(phot_file_root+'BJD.fits')
+   #     try:
+   #         bjds = pyfits.getdata(phot_file_root+'BJD.fits.bz2')
+   #     except:
+        bjds = pyfits.getdata(phot_file_root+'BJD.fits') / 86400. + 2456658.5
         try:
             fluxes = pyfits.getdata(phot_file_root+'FLUX.fits.bz2')
         except:
@@ -537,7 +547,7 @@ if __name__ == "__main__":
         #try:
         #    airmass_0 = pyfits.getdata(phot_file_root+'IMAGELIST.fits.bz2')
         airmass_hdu_0 = pyfits.open(phot_file_root+'IMAGELIST.fits')
-        airmass_0 = np.array(airmass_hdu_0[1].data
+        airmass_0 = np.array(airmass_hdu_0[1].data['AIRMASS'])
 
         target_bjd0 = np.copy(bjds[0])
         bjd_int = int(target_bjd0[0])
@@ -555,9 +565,9 @@ if __name__ == "__main__":
         ignore_run = (len(target_bjd) < len(target_bjd0))
         target_fluxes_full = np.copy(fluxes[0])[keep]
         target_skys_full = np.copy(skybgs[0])[keep]
-        sep_centre_fwhm = np.copy(psfs[:, 1])[keep]
-        tl_centre_fwhm = np.mean(psfs[:, [14, 15]], axis=1)[keep]
-        rgw_fwhm = np.copy(psfs[:, -3])[keep]
+        sep_centre_fwhm = np.copy(psfs[1])[keep]
+        tl_centre_fwhm = np.mean(psfs[[14, 15]], axis=0)[keep]
+        rgw_fwhm = np.copy(psfs[-3])[keep]
         airmass = np.copy(airmass_0)[keep]
         
         scint_noise = estimate_scintillation_noise(airmass, float(args.exptime))
