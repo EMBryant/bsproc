@@ -553,14 +553,16 @@ if __name__ == "__main__":
         bjd_int = int(target_bjd0[0])
         ignore = args.ignore_bjd
         ignore1, ignore2 = ignore[0]+bjd_int, ignore[1]+bjd_int
-        bjd_keep = (target_bjd0 <= ignore1) | (target_bjd0 >= ignore2)
+        target_flux0 = np.copy(fluxes[0][:, 0])    # select target array for 1 aperture to check for bad images
+        bjd_keep_time_range = (target_bjd0 <= ignore1) | (target_bjd0 >= ignore2) 
+        bjd_keep_good_timestamps = (target_flux0 > 0.)
         airmass_keep = airmass_0 > 0.99
         if np.sum(airmass_keep) <= 0.2 * len(airmass_0):
             logger.info('Fewer than 20% of the airmass array is above 1.')
             logger.info('Skipping action.')
             missing_actions = np.append(missing_actions, ac)
             continue
-        keep = bjd_keep & airmass_keep
+        keep = bjd_keep_time_range & bjd_keep_good_timestamps & airmass_keep
         target_bjd = np.copy(bjds[0])[keep]
         ignore_run = (len(target_bjd) < len(target_bjd0))
         target_fluxes_full = np.copy(fluxes[0])[keep]
