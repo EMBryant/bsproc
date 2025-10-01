@@ -92,6 +92,55 @@ def lnprob(theta, params, model, sap, err, airmass, aids, actions, tc1, tc2, qua
 ######    PLOTTING FUNCTIONS    ################################################
 ################################################################################
 
+def plot_1cam(bjd, pdc, pdcerr,
+               pdcmed, pdcerrmed,
+               model_best, model_med,
+               output):
+    tbin, fbin, ebin = lb(bjd, pdc, pdcerr, 5/1440.)
+    tbinm, fbinm, ebinm = lb(bjd, pdcmed, pdcerrmed, 5/1440.)
+    offset = int(bjd[0])
+    s = bjd.argsort()
+    fig1 = plt.figure(figsize=(18, 12))
+    ax1 = fig1.add_subplot(211)
+    ax1.plot(bjd, pdc, 'k.', alpha=0.4, ms=2, zorder=1)
+    ax1.errorbar(tbin, fbin, yerr=ebin, fmt='bo', ms=5, zorder=5)
+    ax1.plot(bjd[s], model_best[s], 'r-', zorder=4)
+    ax1.set_xlabel(f'BJD - [{offset}]')
+    ax1.set_ylabel(f'NGTS Flux')
+    ax1.set_title(obj+'  NGTS  ngfit - Best')
+
+    ax2 = fig1.add_subplot(212)
+    ax2.plot(bjd, sap, 'k.', alpha=0.4, ms=2, zorder=1, label=str(aids[0]))
+    tbi, fbi, ebi = lb(bjd, sap, err, 5/1440.)
+    ax2.errorbar(tbi, fbi, yerr=ebi, fmt='bo', ms=5, zorder=5)
+    ax2.plot(bjd, lc_oot * model_best, 'C1-', zorder=3)
+    ax2.legend(loc='upper left', frameon=False)
+    fig1.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
+                         hspace=0.15, wspace=0.1)
+    fig1.savefig(output+obj+'_ngfit_strict_lc_bestpms.png')
+
+    fig2 = plt.figure(figsize=(18, 12))
+    ax1 = fig2.add_subplot(211)
+    ax1.plot(bjd, pdc, 'k.', alpha=0.4, ms=2, zorder=1)
+    ax1.errorbar(tbin, fbin, yerr=ebin, fmt='bo', ms=5, zorder=5)
+    ax1.plot(bjd[s], model_med[s], 'r-', zorder=4)
+    ax1.set_xlabel(f'BJD - [{offset}]')
+    ax1.set_ylabel(f'NGTS Flux')
+    ax1.set_title(obj+'  NGTS  ngfit - Median')
+
+    ax2 = fig2.add_subplot(212)
+    ax2.plot(bjd, sap, 'k.', alpha=0.4, ms=2, zorder=1, label=str(aids[0]))
+    tbi, fbi, ebi = lb(bjd, sap, err, 5/1440.)
+    ax2.errorbar(tbi, fbi, yerr=ebi, fmt='bo', ms=5, zorder=5)
+    ax2.plot(bjd, lc_oot * model_med, 'C1-', zorder=3)
+    ax2.legend(loc='upper left', frameon=False)
+    fig2.subplots_adjust(top=0.96, bottom=0.06, right=0.98, left=0.08,
+                         hspace=0.15, wspace=0.1)
+    fig2.savefig(output+obj+'_ngfit_strict_lc_medpms.png')
+
+    plt.show()
+    return fig1, fig2
+
 def plot_2cams(bjd, pdc, pdcerr,
                pdcmed, pdcerrmed,
                model_best, model_med,
@@ -867,7 +916,13 @@ if __name__ == "__main__":
  #   plt.savefig(opdir+obj+'_ngfit_strict_corner.png')
  #   plt.close()
     
-    if abs(Nactions - 2) <= 0.1:
+    if abs(Nactions - 1) <= 0.1:
+        fig1, fig2 = plot_1cam(bjd, pdc, pdcerr,
+                               pdcmed, pdcerrmed,
+                               model_best, model_med,
+                               opdir)
+
+    elif abs(Nactions - 2) <= 0.1:
         fig1, fig2 = plot_2cams(bjd, pdc, pdcerr,
                                 pdcmed, pdcerrmed,
                                 model_best, model_med,

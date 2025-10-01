@@ -636,28 +636,32 @@ if __name__ == "__main__":
                                     for cf in comp_skys_full]))
             Ncomps = comp_fluxes.shape[0]
             
-            comp_fluxes_bad = np.vstack(([np.copy(cfb[:, idr])
-                                          for cfb in comp_fluxes_bad0]))
-            #print('Starting Plotting')
-            fig, axes = plt.subplots(int((Ncomps_bad0+1)/2), 2, sharex=True,
-                                     figsize=(12, 3*int((Ncomps_bad0+1)/2)))
-            #print('Made the figure instance')
-            axes = axes.reshape(-1)
-            comp_flux0 = np.copy(comp_fluxes[0])
-            for i, j in zip(range(Ncomps_bad0), comp_inds_bad0):
-                ax=axes[i]
-                comp_tic = comp_tics_bad0[i]
-                comp_flux = np.copy(comp_fluxes_bad[i])
-                comp_flux_corrected = comp_flux / comp_flux0
-            #    comp_flux_norm = comp_flux_corrected / np.median(comp_flux_corrected)
-                ax.plot(comp_bjds_bad0[i], comp_flux_corrected, '.k', alpha=0.5,
-                        label=f'{j}:  TIC-{comp_tic}')
-                leg = ax.legend(loc='upper center', frameon=False)
-                plt.setp(leg.get_texts(), color='k')
-            fig.subplots_adjust(hspace=0., wspace=0.)
-            #print('Finished Plotting')
-            plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_global_rejected_comp_stars_comp0dt_lcs.png')
-            plt.close()
+            if Ncomps_bad0 == 0:
+                logger.info('No globally rejected comparison stars exist. Skipping plot.')
+            else:
+                logger.info(f'{Ncomps_bad0} globally rejected comparison stars. Plotting...')
+                comp_fluxes_bad = np.vstack(([np.copy(cfb[:, idr]) 
+                                              for cfb in comp_fluxes_bad0]))
+                #print('Starting Plotting')
+                fig, axes = plt.subplots(int((Ncomps_bad0+1)/2), 2, sharex=True,
+                                         figsize=(12, 3*int((Ncomps_bad0+1)/2)))
+                #print('Made the figure instance')
+                axes = axes.reshape(-1)
+                comp_flux0 = np.copy(comp_fluxes[0])
+                for i, j in zip(range(Ncomps_bad0), comp_inds_bad0):
+                    ax=axes[i]
+                    comp_tic = comp_tics_bad0[i]
+                    comp_flux = np.copy(comp_fluxes_bad[i])
+                    comp_flux_corrected = comp_flux / comp_flux0
+                #    comp_flux_norm = comp_flux_corrected / np.median(comp_flux_corrected)
+                    ax.plot(comp_bjds_bad0[i], comp_flux_corrected, '.k', alpha=0.5,
+                            label=f'{j}:  TIC-{comp_tic}')
+                    leg = ax.legend(loc='upper center', frameon=False)
+                    plt.setp(leg.get_texts(), color='k')
+                fig.subplots_adjust(hspace=0., wspace=0.)
+                #print('Finished Plotting')
+                plt.savefig(outdir+f'comp_star_check_plots/action{ac}_A{r}_global_rejected_comp_stars_comp0dt_lcs.png')
+                plt.close()
             if args.force_comp_stars:
                 logger.info('User defined comparisons. Skipping bad comp rejection.')
                 comp_fluxes_good = np.copy(comp_fluxes)
