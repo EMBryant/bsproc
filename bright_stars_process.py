@@ -50,8 +50,8 @@ def ParseArgs():
                         help='Node spacing for comparison star rejection spline. OPTIONAL. Default is 0.5mag.')
     parser.add_argument('--exptime', type=float, default=10.,
                         help='Exposure time of observations')
-    parser.add_argument('--update_bjd', action='store_true',
-                        help='Provide this to over write the BJD saved in an existing BSP csv output with the new ngpipe values')
+    parser.add_argument('--force_new_csv', action='store_true',
+                        help='Provide this to force a new phot csv file to be created. WARNING - any existing BSP output files will be overwritten')
     return parser.parse_args()
 
 if __name__ == "__main__":

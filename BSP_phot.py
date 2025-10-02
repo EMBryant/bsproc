@@ -465,14 +465,19 @@ def run_BSP_process_single_action(logger_main, cmd_args, object_name, ngpipe_op_
     # Ensure we have the correct DataFrame to save the data to
     df_full_dir = outdir+'data_files/'
     phot_csv_file = df_full_dir+f'action{ac}_bsproc_dat.csv'
-    if os.path.exists(phot_csv_file):
+    if cmd_args.force_new_csv:
+        logger.info('Creating new phot file: '+phot_csv_file)
+        logger.info('Overwriting the exisiting phot file.')
+        df = pd.DataFrame(np.column_stack((target_bjd_vals, airmass,
+                                           sep_centre_fwhm,
+                                           tl_centre_fwhm,
+                                           rgw_fwhm)),
+                          columns=['BJD','Airmass','FWHM_SEP',
+                                   'FWHM_TL','FWHM_RGW'])
+    elif os.path.exists(phot_csv_file):
         logger.info('Phot CSV file already exists: '+phot_csv_file)
         logger.info('Adding "new" data to existing file...')
         df = pd.read_csv(phot_csv_file, index_col='NExposure')
-        if cmd_args.update_bjd:
-            # Optional flag to update the BJD in the BSP csv files
-            # Used in cases where the ngpipe BJD correction failed due to web query issues
-            df.loc[:, 'BJD'] = target_bjd_vals
     else:
         logger.info('No existing phot csv.')
         logger.info('Creating new phot file: '+phot_csv_file)
