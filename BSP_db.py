@@ -166,6 +166,7 @@ def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdi
     Raises
     ------
     ValueError
+        If no campaign name can be determine for the given object name
         If no actions for the given object can be found on the given night
 
     """
@@ -190,6 +191,8 @@ def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdi
         camp_id = 'HIP41378'
     elif obj_name == 'WASP-47' or obj_name == 'WASP47':
         camp_id = 'WASP47'
+    else:
+        raise ValueError("No campaign name can be determined for Object Name :  "+obj_name+". Please check your inputs.")
     for night, ind_night_outdir in zip(obs_nights, ind_night_outdirs):  
         # SQL queries to identify actions associated with the campaign name for 
         #   the NGTS observation nights considered here
