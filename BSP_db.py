@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/local/python3/bin/python
 # -*- coding: utf-8 -*-
 """
 Created on Thu Oct  2 09:36:58 2025
 
-@author: emb
+Contains the functions relating to querying databases and target catalogues
+for BSP pipeline runs
+
+@author: Edward M. Bryant
 """
 import pymysql
 import pymysql.cursors
@@ -12,13 +15,41 @@ import numpy as np
 import os
 
 def get_target_catalogue_from_database(tic_id):
+    """
+    Function to extract the ngpipe photometry target catalogue from the SQL databases
+    NOTE - this function is not used currently as ngpipe produces the target catalogues
+             as fits files for each action
+             
+    Parameters
+    ----------
+    tic_id : int
+        TIC ID of the target
+
+    Returns
+    -------
+    tic_ids : array; int
+        TIC IDs for each star in the ngpipe target catalogue
+    idx : array; int
+        Indices from ngpipe differentiating the target star, the nearby stars, and the comparison stars.
+    mask : array; boolean
+        Comparison star rejection mask from ngpipe.
+    tmags : array; float
+        TESS mag values for all stars in the ngpipe target catalogue
+    
+    """
+    # This first query checks whether there is information within the ngpipe target
+    #   catalogue for the target star
+    # If the information does not exist we exit and BSP knows to fail gracefully
     qry = 'SELECT target_tic_id FROM ngts_wcs.ngts_target_photometry_catalogue WHERE target_tic_id={:};'.format(tic_id)
     connection = pymysql.connect(host='ngtsdb', user='pipe')
     with connection.cursor() as cur:
         cur.execute(qry)
     output = cur.fetchall()
-    if len(output)==0 : return None, None, None, None
-
+    if len(output)==0: 
+        return None, None, None, None
+    
+    # This second query now pulls the relevant info for the target, nearby, and
+    #    comparison stars from the ngpipe target catalogue and TIC SQL databases
     qry = 'SELECT a.tic_id, a.obj_type, a.mask, b.Tmag, a.metric FROM ngts_wcs.ngts_target_photometry_catalogue a LEFT JOIN catalogues.tic8 b ON a.tic_id=b.tic_id WHERE a.target_tic_id={:} ORDER BY a.obj_type,a.metric;'.format(tic_id)
     with connection.cursor() as cur:
         cur.execute(qry)
@@ -33,9 +64,37 @@ def check_output_directories(bs_root_dir, obs_nights, obj_name):
     """
     Function to ensure the correct output directories exist
     If the relevant directories do not exist then they will be generated
+    
+    Parameters
+    ----------
+    bs_root_dir : str
+        Path to the root directory for the BSP outputs for all objects
+    obs_nights : list; str
+        NGTS observation nights considered in the BSP pipeline run
+    obj_name : str
+        Name of the target star
+
+    Returns
+    -------
+    outdir_main : str
+        Path to the specific root directory for BSP pipeline outputs for this object
+    ind_night_outdirs : list; str
+        Paths to directories for the BSP outputs for each observation night considered
+            in this BSP pipeline run
+    
+    Raises
+    ------
+    ValueError
+        If an observation night(s) is not provided to the command line or is provided 
+            in an incorrect format
+        
     """
+    # Check for whether BSP output root directory exists
+    # If it does not, create the directory
     if not os.path.exists(bs_root_dir):
         os.system('mkdir '+bs_root_dir)
+    # Check whether the BSP output directory exists for the object
+    # If not, create the directory with correct structure
     objdir = bs_root_dir+'/'+obj_name+'/'
     if not os.path.exists(objdir):
         os.system('mkdir '+objdir)
@@ -49,6 +108,7 @@ def check_output_directories(bs_root_dir, obs_nights, obj_name):
     if obs_nights is None:
         raise ValueError('I need night(s) for the observations. (--night <YYYY-MM-DD>)')
     
+    # Create a sub-directory within the BSP outputs directory for each observation night
     ind_night_outdirs = []
     for night in obs_nights:
         ymd = night.split('-')
@@ -75,11 +135,45 @@ def check_output_directories(bs_root_dir, obs_nights, obj_name):
     return outdir_main, ind_night_outdirs
 
 def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdirs):
+    """
+    Function to identify the relevant NGTS action IDs from the SQL databases
+        for the object and observation nights we are running the BSP pipeline for
+
+    Parameters
+    ----------
+    logger_main : logger
+        Logger governing the log file for the overall BSP run.
+    cmd_args : 
+        Store for the command line arguments.
+    obj_name : str
+        Name of the target.
+    obs_nights : list; str
+        NGTS observation nights.
+    ind_night_outdirs : list; str
+        Paths to BSP output directories corresponding to each observation night.
+
+    Returns
+    -------
+    logger_main : logger
+        Logger governing the log file for the overall BSP run.
+    actions : array; int
+        NGTS action IDs
+    night_store : list; str
+        NGTS observation nights for each NGTS action
+    ind_night_outdir_store : list; str
+        BSP output paths to use for each NGTS action
+    
+    Raises
+    ------
+    ValueError
+        If no actions for the given object can be found on the given night
+
+    """
     
     actions = np.array([], dtype=int)
     night_store = []
     ind_night_outdir_store = []
-    #Find campaign name
+    # First we determine the NGTS campaign name to use
     if obj_name[:3] == 'TOI':
         toiid = int(obj_name.split('-')[-1])
         camp_id = f'TOI-{toiid:05d}'
@@ -96,7 +190,9 @@ def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdi
         camp_id = 'HIP41378'
     elif obj_name == 'WASP-47' or obj_name == 'WASP47':
         camp_id = 'WASP47'
-    for night, ind_night_outdir in zip(obs_nights, ind_night_outdirs):     
+    for night, ind_night_outdir in zip(obs_nights, ind_night_outdirs):  
+        # SQL queries to identify actions associated with the campaign name for 
+        #   the NGTS observation nights considered here
         connection = pymysql.connect(host='ngtsdb', db='ngts_ops', user='pipe')
         if cmd_args.camera is None:
             qry = "select action_id,num_images,status from action_summary_log where night='"+night+"' and campaign like '%"+camp_id+"%'"
@@ -106,6 +202,7 @@ def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdi
             cur.execute(qry)
             res = cur.fetchall()
         if len(res) < 0.5:
+            # If we find no action IDs we test for an alternative campaign name style
             if obj_name[:3] == 'TOI':
                 camp_id2 = f'TOI-{toiid}'
                 if cmd_args.camera is None:
@@ -118,6 +215,13 @@ def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdi
                 if len(res) < 0.5:
                     logger_main.info('I found no actions for '+obj_name+' for night '+night)
                     logger_main.info('Checking for other actions for night '+night)
+                    # If we find no actions we check for other actions on the same night
+                    # If we find other actions we print these to the screen and then exit gracefully
+                    # This allows the user to check if they have entered the object name incorrectly
+                    #    resulting in an incorrect campaign name
+                    # We also check for other actions for the campaign name on other nights
+                    # Any such actions are printed to the screen and then BSP exits gracefully
+                    # This allows the user to check if they have entered the wrong observation night
                     if cmd_args.camera is None:
                         qry2 = "select campaign,action_id,num_images,status from action_summary_log where night='"+night+"' and action_type='observeField'"
                         qry3 = "select night,action_id,num_images,status from action_summary_log where campaign like '%"+camp_id+"%'"
@@ -154,10 +258,15 @@ def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdi
                     else:
                         raise ValueError('Found actions for '+obj_name+' on other nights and actions for other objects on '+night+'. Check your inputs.')
 
+        # If we find actions for the object on the provided night we add these to the overall BSP run log file
         logger_main.info(f'Found {len(res)} actions for '+obj_name+' for night '+night)
         for r in res:
             logger_main.info(f'{r}')
         logger_main.info('Checking actions...')
+        # For each action we check whether it is worth extracting photometry from
+        # We check for whether the action has
+        #    1. completed
+        #    2. been aborted but where > 100 images were taken before this point
         for r in res:
             action = int(r[0])
             num_ims= r[1]
@@ -176,11 +285,38 @@ def find_action_ids(logger_main, cmd_args, obj_name, obs_nights, ind_night_outdi
     return logger_main, actions, night_store, ind_night_outdir_store
 
 def get_target_tic_id(logger_main, obj_name):
+    """
+    Function to find the TIC ID for the target
+
+    Parameters
+    ----------
+    logger_main : logger
+        Logger governing the log file for the overall BSP run.
+    obj_name : str
+        Name of the target.
+    
+    Returns
+    -------
+    logger_main : logger
+        Logger governing the log file for the overall BSP run.
+    tic_id : int
+        TIC ID of the target
+    
+    Raises
+    ------
+    ValueError
+        If no TIC ID can be found for the given object    
+
+    """
+    
     tic = None
     if obj_name[:3] == 'TIC':
+        # If the provided object name is in the form of a TIC ID we simply use this
         tic = int(obj_name.split('-')[-1])
         logger_main.info(f'Object is TIC-{tic}')
     elif obj_name[:3] == 'TOI':
+        # If the provided object name is in the form of a TOI ID we find the TIC ID
+        #   using the relevant SQL database
         logger_main.info('Finding TIC ID from TOI ID...')
         db_toiid = str(int(obj_name.split('-')[-1]))+'.01'
         connection = pymysql.connect(host='ngtsdb', db='tess', user='pipe')
@@ -208,17 +344,53 @@ def get_target_tic_id(logger_main, obj_name):
         tic = 102264230
         logger_main.info(f'Object is TIC-{tic}')
     if tic is None:
-        logger_main.info('ERROR - no TIC ID ffound for '+obj_name+'. Quitting.')
+        logger_main.info('ERROR - no TIC ID found for '+obj_name+'. Quitting.')
         raise ValueError('No TIC ID found for '+obj_name+'. Quitting.')
     
     return logger_main, tic
 
 def query_target_catalogues(logger, obj_tic, phot_file_dir, ac_id):
+    """
+    Function to query the target catalogue for the NGTS action
+
+    Parameters
+    ----------
+    logger : logger
+        Logger governing the log file for the single action BSP run
+    obj_tic : int
+        TIC ID of the target.
+    phot_file_dir : str
+        Path to the ngpipe output directory for the NGTS action
+    ac_id : int
+        NGTS action ID
+    
+    Returns
+    -------
+    logger : logger
+        Logger governing the log file for the single action BSP run
+    tic_ids : array; int
+        TIC IDs for all stars in the ngpipe photometry catalogue
+    idx : array; int
+        Indices from ngpipe differentiating the target star, the nearby stars, and the comparison stars.
+    star_mask : array; boolean
+        Comparison star rejection mask from ngpipe.
+    tmag_target : float
+        TESS mag of the target star.
+    tmags_comps : array; float
+        TESS mag values for the comparison stars.
+    
+    Raises
+    ------
+    ValueError
+        If no ngpipe target catalogue information can be found for the NGTS action   
+
+    """
     logger.info(f'Querying target catalogue for action {ac_id}...')
     target_cat_fits_path = phot_file_dir + f'ACTION_{ac_id}_PHOTOMETRY_CATALOGUE.fits'
     if os.path.exists(target_cat_fits_path):
+        # If the ngpipe photometry catalogue for the action exists in the correct
+        #    directory we use this to extract the target catalogue information
         star_cat  = pyfits.getdata(target_cat_fits_path)
-    #    star_mask = np.array([int(1 - m[0]) for m in star_mask0], dtype=int)
         tic_ids = np.array(star_cat.tic_id)
         idx = np.array(star_cat.phot_type)
         star_mask = 1 - np.array(star_cat.mask, dtype=int)[idx==2]
@@ -226,8 +398,13 @@ def query_target_catalogues(logger, obj_tic, phot_file_dir, ac_id):
         tmag_target = tmags_full[0]
         tmags_comps = tmags_full[idx==2]
     else:
+        # If the ngpipe photometry catalogue file does not exist we instead query
+        #   the ngpipe target catalogue from the SQL databases
+        # NOTE - this functionality is mostly unused these days following updates to ngpipe
         tic_ids, idx, star_mask0, tmags_full = get_target_catalogue_from_database(obj_tic)
         if tic_ids is None:
+            # If no target catalogue information can be found BSP exits gracefully
+            # Solution here is to ensure the ngpipe photometry reduction has completed for the observations
             logger.info('ERROR - Couldn\'t find any target catalogue information for TIC '+str(obj_tic))
             raise ValueError('Couldn\'t find any target catalogue information for TIC '+str(obj_tic))
         tmag_target = tmags_full[0]
