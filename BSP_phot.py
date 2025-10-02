@@ -1152,7 +1152,7 @@ def collect_best_aperture_photometry(logger_main, ac_apers_min_target, ac_apers_
     ax2.plot(bjd-t0, flux_mc, '.k', alpha=0.3, zorder=1, rasterized=True)
     ax2.errorbar(tbin_mc-t0, fbin_mc, yerr=ebin_mc, fmt='bo', ecolor='cyan', zorder=2)
     ax2.set_ylabel('Norm Flux - Comp Apers', fontsize=14)
-    ax2.set_title(obj_name+'  Night(s): '+ns1+f'\nActions: {action_ids[ac_map]}\Apers: {ac_apers_min_master}')
+    ax2.set_title(obj_name+'  Night(s): '+ns1+f'\nActions: {action_ids[ac_map]}\nApers: {ac_apers_min_master}')
     
     ax2.set_xlabel(f'Time (BJD - {t0})', fontsize=14)
     
